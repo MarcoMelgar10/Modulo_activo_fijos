@@ -20,6 +20,12 @@
 | 7 | Cierre de gestión | ⬜ Pendiente |
 | 8 | Dashboard + cumplimiento fiscal SIN | ⬜ Pendiente |
 | 9 | Pruebas, calidad y despliegue | ⬜ Pendiente |
+| 10 | **Presupuesto**: definición y aprobación (RF-PRE-01/02) | ⬜ Pendiente |
+| 11 | **Presupuesto**: ejecución y reportes (RF-PRE-03/04/05) | ⬜ Pendiente |
+
+> **Nota de alcance:** además de Contabilidad, el proyecto incluye el **módulo de Presupuesto**
+> (Fase B, Etapas 10–11), que se desarrolla tras Contabilidad porque su control de ejecución se
+> apoya en los asientos contables. Documentado en `documentacion.md` (3.5.7, 3.6.5) y en el plan.
 
 ---
 

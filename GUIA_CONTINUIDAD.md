@@ -15,8 +15,9 @@ Es el **módulo de Contabilidad y Finanzas** de un ERP web llamado **Flowy**, di
 cadena de supermercados ficticia **MarketSuper** (proyecto de la materia Ingeniería de Software).
 
 El ERP completo (descrito en `documentacion.md`) tiene módulos de inventario, ventas POS,
-compras, contabilidad y seguridad. **Este repositorio implementa ÚNICAMENTE el módulo de
-Contabilidad.** Los demás módulos quedan fuera de alcance.
+compras, contabilidad y seguridad. **Este repositorio implementa el módulo de Contabilidad y,
+como complemento, el módulo de Presupuesto** (control presupuestario que se apoya en la
+contabilidad — ver Etapas 10–11). Los demás módulos del ERP quedan fuera de alcance.
 
 ### ⚠️ Aclaración de nombre (importante)
 La carpeta se llama `Modulo_activo_fijos`, pero **el módulo NO es de activos fijos**. Es de
@@ -170,6 +171,13 @@ Las definiciones exactas de columnas están en `documentacion.md` §3.6.4.
 | 7 | Cierre de gestión | ⬜ |
 | 8 | Dashboard + cumplimiento fiscal SIN | ⬜ |
 | 9 | Pruebas, calidad y despliegue | ⬜ |
+| 10 | Presupuesto: definición y aprobación (RF-PRE-01/02) | ⬜ |
+| 11 | Presupuesto: ejecución y reportes (RF-PRE-03/04/05) | ⬜ |
+
+> **Alcance ampliado:** el proyecto incluye un segundo módulo, **Presupuesto** (Etapas 10–11,
+> "Fase B" en el plan), que reutiliza la arquitectura y la contabilidad (la ejecución real se
+> calcula desde `linea_asiento`). Requisitos en `documentacion.md` §3.5.7 y diccionario §3.6.5.
+> Tablas nuevas: `presupuesto`, `linea_presupuesto`. Se construye después de las Etapas 0–9.
 
 Ver el detalle de cada etapa completada en `PROGRESO.md`.
 
