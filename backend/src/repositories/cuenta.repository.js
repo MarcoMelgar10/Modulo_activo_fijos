@@ -1,3 +1,4 @@
+import { Op } from 'sequelize';
 import { CuentaContable } from '../models/index.js';
 
 export const cuentaRepository = {
@@ -15,6 +16,10 @@ export const cuentaRepository = {
 
   findByIds(ids) {
     return CuentaContable.findAll({ where: { id_cuenta: ids } });
+  },
+
+  findByCodigos(codigos) {
+    return CuentaContable.findAll({ where: { codigo: { [Op.in]: codigos } } });
   },
 
   countSubcuentas(idPadre) {

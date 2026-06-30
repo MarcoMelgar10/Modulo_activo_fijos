@@ -62,7 +62,8 @@ describe('AsientoService.crear', () => {
       crearLineas: jest.fn().mockResolvedValue([]),
       findById: jest.fn().mockResolvedValue({ id_asiento: 10, numero_asiento: 'AST-2026-00001' }),
     };
-    return { repo, cuentas };
+    const cierres = { periodoEstaCerrado: jest.fn().mockResolvedValue(false) };
+    return { repo, cuentas, cierres };
   }
 
   it('crea el asiento en una transacción con numeración correlativa', async () => {
@@ -85,6 +86,15 @@ describe('AsientoService.crear', () => {
       service.crear({ fecha: '2026-06-01', concepto: 'X', lineas: lineasOk }),
     ).rejects.toThrow(/agrupación/);
   });
+
+  it('rechaza crear un asiento en un período cerrado', async () => {
+    const d = deps();
+    d.cierres.periodoEstaCerrado.mockResolvedValue(true);
+    const service = createAsientoService(d);
+    await expect(
+      service.crear({ fecha: '2025-06-01', concepto: 'X', lineas: lineasOk }),
+    ).rejects.toMatchObject({ statusCode: 409 });
+  });
 });
 
 describe('AsientoService transiciones de estado', () => {
@@ -92,6 +102,7 @@ describe('AsientoService transiciones de estado', () => {
     const asiento = {
       id_asiento: 1,
       numero_asiento: 'AST-2026-00001',
+      fecha: '2026-06-01',
       estado,
       lineas: [
         { debe: 100, haber: 0 },
@@ -102,7 +113,8 @@ describe('AsientoService transiciones de estado', () => {
       }),
     };
     const repo = { findById: jest.fn().mockResolvedValue(asiento) };
-    return { service: createAsientoService({ repo, cuentas: {} }), asiento };
+    const cierres = { periodoEstaCerrado: jest.fn().mockResolvedValue(false) };
+    return { service: createAsientoService({ repo, cuentas: {}, cierres }), asiento };
   }
 
   it('confirma un BORRADOR balanceado', async () => {

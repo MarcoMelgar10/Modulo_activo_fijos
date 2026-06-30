@@ -2,6 +2,7 @@ import { ApiError } from '../utils/ApiError.js';
 import { toCents, sumCents, centsToAmount } from '../utils/money.js';
 import { asientoRepository } from '../repositories/asiento.repository.js';
 import { cuentaRepository } from '../repositories/cuenta.repository.js';
+import { cierreRepository } from '../repositories/cierre.repository.js';
 
 /**
  * Valida la partida doble de un conjunto de líneas (lógica pura, sin BD):
@@ -39,7 +40,11 @@ export function validarPartidaDoble(lineas) {
   return { totalDebe: centsToAmount(totalDebe), totalHaber: centsToAmount(totalHaber) };
 }
 
-export function createAsientoService({ repo = asientoRepository, cuentas = cuentaRepository } = {}) {
+export function createAsientoService({
+  repo = asientoRepository,
+  cuentas = cuentaRepository,
+  cierres = cierreRepository,
+} = {}) {
   async function validarCuentas(lineas) {
     const ids = [...new Set(lineas.map((l) => l.id_cuenta))];
     const encontradas = await cuentas.findByIds(ids);
@@ -56,6 +61,16 @@ export function createAsientoService({ repo = asientoRepository, cuentas = cuent
     }
   }
 
+  // Bloqueo de período (Etapa 7): no se permiten cambios de asientos cuya fecha
+  // caiga en una gestión ya cerrada.
+  async function assertPeriodoAbierto(fecha) {
+    if (await cierres.periodoEstaCerrado(fecha)) {
+      throw ApiError.conflict(
+        'El período contable de esa fecha está cerrado; no se permiten cambios de asientos',
+      );
+    }
+  }
+
   return {
     validarPartidaDoble,
 
@@ -69,7 +84,8 @@ export function createAsientoService({ repo = asientoRepository, cuentas = cuent
       return asiento;
     },
 
-    async crear({ id_sucursal, fecha, concepto, tipo_origen = 'MANUAL', id_referencia = null, lineas }) {
+    async crear({ id_sucursal, fecha, concepto, tipo_origen = 'MANUAL', id_referencia = null, estado = 'BORRADOR', lineas }) {
+      await assertPeriodoAbierto(fecha);
       validarPartidaDoble(lineas);
       await validarCuentas(lineas);
 
@@ -85,7 +101,7 @@ export function createAsientoService({ repo = asientoRepository, cuentas = cuent
             concepto,
             tipo_origen,
             id_referencia,
-            estado: 'BORRADOR',
+            estado,
           },
           t,
         );
@@ -108,6 +124,7 @@ export function createAsientoService({ repo = asientoRepository, cuentas = cuent
 
     async confirmar(id) {
       const asiento = await this.obtener(id);
+      await assertPeriodoAbierto(asiento.fecha);
       if (asiento.estado !== 'BORRADOR') {
         throw ApiError.conflict(`Solo se confirman asientos en BORRADOR (actual: ${asiento.estado})`);
       }
@@ -119,6 +136,7 @@ export function createAsientoService({ repo = asientoRepository, cuentas = cuent
 
     async anular(id) {
       const asiento = await this.obtener(id);
+      await assertPeriodoAbierto(asiento.fecha);
       if (asiento.estado !== 'CONFIRMADO') {
         throw ApiError.conflict(`Solo se anulan asientos CONFIRMADOS (actual: ${asiento.estado})`);
       }

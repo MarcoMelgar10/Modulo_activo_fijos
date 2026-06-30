@@ -5,7 +5,12 @@ import { Login } from '../pages/Login.jsx';
 import { Dashboard } from '../pages/Dashboard.jsx';
 import { Cuentas } from '../pages/Cuentas.jsx';
 import { Asientos } from '../pages/Asientos.jsx';
-import { Placeholder } from '../pages/Placeholder.jsx';
+import { LibroDiario } from '../pages/LibroDiario.jsx';
+import { LibroMayor } from '../pages/LibroMayor.jsx';
+import { BalanceGeneral } from '../pages/BalanceGeneral.jsx';
+import { EstadoResultados } from '../pages/EstadoResultados.jsx';
+import { SimuladorEventos } from '../pages/SimuladorEventos.jsx';
+import { Cierres } from '../pages/Cierres.jsx';
 
 // Roles con acceso al módulo de Contabilidad.
 const CONTABLES = ['CONTADOR', 'GERENTE'];
@@ -23,10 +28,12 @@ const router = createBrowserRouter([
       { index: true, element: <Dashboard /> },
       { path: 'cuentas', element: <Cuentas /> },
       { path: 'asientos', element: <Asientos /> },
-      { path: 'libro-diario', element: <Placeholder title="Libro Diario" etapa="Etapa 5" /> },
-      { path: 'libro-mayor', element: <Placeholder title="Libro Mayor" etapa="Etapa 5" /> },
-      { path: 'estados', element: <Placeholder title="Estados financieros" etapa="Etapa 6" /> },
-      { path: 'cierres', element: <Placeholder title="Cierre de gestión" etapa="Etapa 7" /> },
+      { path: 'libro-diario', element: <LibroDiario /> },
+      { path: 'libro-mayor', element: <LibroMayor /> },
+      { path: 'balance-general', element: <BalanceGeneral /> },
+      { path: 'estado-resultados', element: <EstadoResultados /> },
+      { path: 'simulador-erp', element: <SimuladorEventos /> },
+      { path: 'cierres', element: <Cierres /> },
     ],
   },
 ]);

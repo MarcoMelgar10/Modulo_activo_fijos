@@ -14,10 +14,10 @@
 | 1 | Auth, RBAC y Auditoría | ✅ Completada |
 | 2 | Plan de Cuentas | ✅ Completada |
 | 3 | Asientos manuales (partida doble) | ✅ Completada |
-| 4 | Generación automática (API de eventos) | ⬜ Pendiente |
-| 5 | Libros contables (Diario/Mayor) | ⬜ Pendiente |
-| 6 | Estados financieros | ⬜ Pendiente |
-| 7 | Cierre de gestión | ⬜ Pendiente |
+| 4 | Generación automática (API de eventos) | ✅ Completada |
+| 5 | Libros contables (Diario/Mayor) | ✅ Completada |
+| 6 | Estados financieros | ✅ Completada |
+| 7 | Cierre de gestión | ✅ Completada |
 | 8 | Dashboard + cumplimiento fiscal SIN | ⬜ Pendiente |
 | 9 | Pruebas, calidad y despliegue | ⬜ Pendiente |
 | 10 | **Presupuesto**: definición y aprobación (RF-PRE-01/02) | ⬜ Pendiente |
@@ -187,3 +187,73 @@ cd frontend && npm install && npm run dev   # http://localhost:5173
 `POST /api/eventos-contables` (capa anticorrupción) para VENTA/COMPRA/DEVOLUCION/PAGO, con
 estrategias de mapeo evento→asiento (reutilizando `asientoService.crear` con `tipo_origen`),
 y seeders de eventos demo que produzcan asientos reales.
+
+---
+
+## Actualización al 2026-06-28 — Etapas 4 a 7
+
+> Backend de las Etapas 4, 5 y 6 implementado por el equipo. En esta iteración se
+> añadió la **Etapa 7 (Cierre de gestión)**, se **corrigió el Balance General** de
+> la Etapa 6 y se limpió el repositorio (se quitaron `.env` y archivos temporales).
+> Pruebas: **backend 57/57 ✓ · frontend 3/3 ✓** (verificadas con Jest).
+
+### Etapa 4 — Generación automática de asientos ✅ (revisada, sin cambios de lógica)
+- `services/accounting.service.js`: estrategias por tipo de evento (VENTA, COMPRA,
+  DEVOLUCION, PAGO) con patrón OCP; cálculo de IVA 13% (Bolivia, "por dentro").
+  Genera el asiento CONFIRMADO en una transacción reutilizando `asientoService.crear`.
+- `controllers/evento.controller.js`, `routes/evento.routes.js`, `validators/evento.validators.js`.
+- Migración `...add-pago-tipo-origen.cjs` (añade `PAGO` al enum) y seeder de eventos demo.
+- API: `POST /api/eventos-contables`. Frontend: página **Simulador ERP** (`/simulador-erp`).
+- Nota: VENTA/COMPRA se registran al contado (Caja). Las ventas/compras a crédito
+  (Cuentas por Cobrar/Pagar) quedan como mejora futura — es una simplificación, no un error.
+
+### Etapa 5 — Libros Diario y Mayor ✅ (revisada, correcta)
+- `services/libro.service.js` + `repositories/libro.repository.js`: Libro Diario
+  (líneas confirmadas del período con totales y flag de cuadre) y Libro Mayor
+  (saldo inicial + movimientos con saldo acumulado, según naturaleza deudora/acreedora).
+- `controllers/libro.controller.js`, `routes/libro.routes.js`, `validators/libro.validators.js`.
+- API: `GET /api/libros/diario`, `GET /api/libros/mayor` (filtros de fecha; el Mayor exige `id_cuenta`).
+- Frontend (implementado por el equipo): páginas **Libro Diario** y **Libro Mayor** (`/libro-diario`, `/libro-mayor`).
+
+### Etapa 6 — Estados financieros ✅ (corregida)
+- `services/reporte.service.js` + `repositories/reporte.repository.js`: Balance General
+  y Estado de Resultados con propagación jerárquica de saldos.
+- **Corrección aplicada (Balance General):**
+  1. Ahora usa **saldos acumulados hasta `fecha_fin`** (`getTotalesAcumulados`, `fecha <= fecha_fin`),
+     no solo el rango. Un balance es una foto a una fecha, no un movimiento de período.
+  2. Incorpora el **resultado del ejercicio** (Ingresos − Gastos) al patrimonio, de modo que
+     `Activo = Pasivo + Patrimonio` se cumple incluso **antes** del cierre. Tras el cierre el
+     término vale 0 (no hay doble conteo).
+- El Estado de Resultados se mantiene por rango (correcto: cuentas de flujo).
+- API: `GET /api/reportes/balance-general`, `GET /api/reportes/estado-resultados`.
+- Frontend (implementado por el equipo): **Balance General** y **Estado de Resultados** (`/balance-general`, `/estado-resultados`).
+
+### Etapa 7 — Cierre de gestión (anual) ✅ NUEVO
+- Modelo `CierreContable` + migración `...cierre-contable.cjs` (tabla con FKs, índice y
+  unique por gestión).
+- `services/cierre.service.js`: cierra una gestión anual, genera el **asiento de cierre**
+  (traslada el resultado a la cuenta de patrimonio 3.2.1 "Resultado del Ejercicio") como
+  asiento CONFIRMADO, y registra el período como CERRADO.
+- **Bloqueo de período:** `asiento.service` ahora impide crear/confirmar/anular asientos cuya
+  fecha caiga en una gestión cerrada.
+- `repositories/cierre.repository.js`, `validators/cierre.validators.js`,
+  `controllers/cierre.controller.js`, `routes/cierre.routes.js`.
+- Frontend: `pages/Cierres.jsx` + `services/cierres.service.js` + `queries/useCierres.js`
+  (página conectada en `/cierres`, reemplaza el Placeholder).
+- API: `GET /api/cierres`, `GET /api/cierres/:id`, `POST /api/cierres` (cerrar, solo CONTADOR).
+
+### Higiene del repositorio
+- Se eliminaron del proyecto: `backend/.env` (no debe versionarse; usar `.env.template`),
+  `*.txt` de logs, `error.md`, `paso*.md`, `implementation_plan.md` y un `GUIA_CONTINUIDAD.md`
+  duplicado dentro de `backend/`.
+
+### Para continuar (siguiente quien retome)
+1. `cd backend && npm install && npm run db:migrate && npm run db:seed` (crea/seedea la BD,
+   incluida la tabla `cierre_contable`).
+2. `npm test` para verificar (57 pruebas backend).
+3. **Siguiente parte a desarrollar: Etapa 8 — Dashboard + cumplimiento fiscal (SIN).**
+   Después: calidad/despliegue (9) y los módulos de Presupuesto (10–11).
+
+> UI del módulo de Contabilidad COMPLETA hasta la Etapa 7: Login, Dashboard, Plan de
+> cuentas, Asientos, Simulador ERP, Libro Diario, Libro Mayor, Balance General,
+> Estado de Resultados y Cierre de gestión.

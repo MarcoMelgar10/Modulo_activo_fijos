@@ -314,3 +314,31 @@ Las etapas 5–9 están descritas en el plan aprobado y en `PROGRESO.md`.
 3. Verificar end-to-end contra MySQL/Redis reales.
 4. Actualizar `PROGRESO.md` y `backend/README.md`.
 5. Repetir con la siguiente etapa.
+
+---
+
+## Actualización 2026-06-28 (corrige datos previos de esta guía)
+
+Esta sección reemplaza la información desactualizada de arriba:
+
+- **Pruebas:** ahora son **backend 57** y **frontend 3** (antes esta guía decía 10/10).
+- **Tablas:** `asiento_contable`, `linea_asiento` y `cuenta_contable` **ya están creadas**
+  (no son "por crear"). Se añadió la tabla **`cierre_contable`** (Etapa 7).
+- **Etapas completadas:** 0, 1, 2, 3, **4, 5, 6 y 7**. Detalle completo en `PROGRESO.md`.
+
+### Estado por capa
+- **Backend:** etapas 0–7 completas (auth, plan de cuentas, asientos, generación automática,
+  libros, estados financieros y cierre de gestión).
+- **Frontend:** completas Login, Dashboard, Cuentas, Asientos, **Simulador ERP**, **Libro Diario**,
+  **Libro Mayor**, **Balance General**, **Estado de Resultados** y **Cierres**. La UI del módulo
+  está completa hasta la Etapa 7. Siguiente parte: **Etapa 8 (Dashboard + SIN)**.
+
+### Receta para una nueva etapa (recordatorio)
+Backend: `model` → `migration` → `repository` → `service` → `validator` → `controller` →
+`route` (registrar en `routes/index.js`) → `test`. Frontend: `service` → `query` → `page`
+(conectar en `router/AppRouter.jsx`). Tras terminar, **actualizar este archivo y `PROGRESO.md`**.
+
+### Aviso importante para el equipo
+- Tras **cerrar una gestión** (Etapa 7) no se pueden crear/editar asientos de ese año
+  (bloqueo de período). Tenerlo en cuenta al hacer demos o pruebas con datos de un año cerrado.
+- **No volver a versionar `backend/.env`**: usar `backend/.env.template` y crear el `.env` local.

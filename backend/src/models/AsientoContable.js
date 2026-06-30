@@ -1,7 +1,7 @@
 import { DataTypes } from 'sequelize';
 import { sequelize } from '../config/database.js';
 
-export const TIPOS_ORIGEN = ['VENTA', 'COMPRA', 'DEVOLUCION', 'MANUAL', 'CIERRE'];
+export const TIPOS_ORIGEN = ['VENTA', 'COMPRA', 'DEVOLUCION', 'PAGO', 'MANUAL', 'CIERRE'];
 export const ESTADOS_ASIENTO = ['BORRADOR', 'CONFIRMADO', 'ANULADO'];
 
 export const AsientoContable = sequelize.define(

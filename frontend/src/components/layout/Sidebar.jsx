@@ -2,7 +2,7 @@ import { NavLink } from 'react-router-dom';
 import { navItems } from './navItems.js';
 import { cn } from '../../lib/cn.js';
 
-const sections = ['General', 'Contabilidad', 'Reportes'];
+const sections = ['General', 'Contabilidad', 'Reportes Financieros'];
 
 export function Sidebar() {
   return (

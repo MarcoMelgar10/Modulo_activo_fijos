@@ -1,10 +1,12 @@
-// Navegación del módulo de Contabilidad. Cada ítem se habilita por etapa.
+// Navegación del módulo de Contabilidad.
 export const navItems = [
   { to: '/', label: 'Dashboard', section: 'General' },
   { to: '/cuentas', label: 'Plan de cuentas', section: 'Contabilidad' },
   { to: '/asientos', label: 'Asientos', section: 'Contabilidad' },
-  { to: '/libro-diario', label: 'Libro Diario', section: 'Reportes' },
-  { to: '/libro-mayor', label: 'Libro Mayor', section: 'Reportes' },
-  { to: '/estados', label: 'Estados financieros', section: 'Reportes' },
+  { to: '/simulador-erp', label: 'Simulador ERP', section: 'Contabilidad' },
   { to: '/cierres', label: 'Cierre de gestión', section: 'Contabilidad' },
+  { to: '/libro-diario', label: 'Libro Diario', section: 'Reportes Financieros' },
+  { to: '/libro-mayor', label: 'Libro Mayor', section: 'Reportes Financieros' },
+  { to: '/balance-general', label: 'Balance General', section: 'Reportes Financieros' },
+  { to: '/estado-resultados', label: 'Estado de Resultados', section: 'Reportes Financieros' },
 ];
