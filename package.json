@@ -1,0 +1,11 @@
+{
+  "name": "contabilidad-erp",
+  "private": true,
+  "scripts": {
+    "dev": "docker compose up --build",
+    "test": "cd backend && npm test && cd ../frontend && npm test",
+    "lint": "cd backend && npm run lint && cd ../frontend && npm run lint",
+    "db:migrate": "cd backend && npm run db:migrate",
+    "db:seed": "cd backend && npm run db:seed"
+  }
+}
