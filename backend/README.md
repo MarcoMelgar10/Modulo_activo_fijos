@@ -69,6 +69,43 @@ fallidos, RBAC por rol (`authorizeRoles`), rate-limit en login, auditoría de ac
 Body de creación: `{ fecha, concepto, tipo_origen?, lineas: [{ id_cuenta, debe, haber, descripcion? }] }`.
 Regla: Σdebe = Σhaber > 0; las cuentas deben permitir movimiento.
 
+### Generación automática (Etapa 4)
+| Método | Ruta | Rol | Descripción |
+|--------|------|-----|-------------|
+| POST | `/api/eventos-contables` | CONTADOR | Genera asiento CONFIRMADO desde evento (VENTA/COMPRA/DEVOLUCION/PAGO) |
+
+Body: `{ tipo, fecha, referencia_id, monto_total, sucursal_id, glosa? }`. IVA 13% "por dentro".
+
+### Libros contables (Etapa 5)
+| Método | Ruta | Rol | Descripción |
+|--------|------|-----|-------------|
+| GET | `/api/libros/diario` | CONTADOR/GERENTE | Libro Diario (params: `fecha_inicio`, `fecha_fin`) |
+| GET | `/api/libros/mayor` | CONTADOR/GERENTE | Libro Mayor (params: `id_cuenta`, `fecha_inicio`, `fecha_fin`) |
+
+### Estados financieros (Etapa 6)
+| Método | Ruta | Rol | Descripción |
+|--------|------|-----|-------------|
+| GET | `/api/reportes/balance-general` | CONTADOR/GERENTE | Balance General (params: `fecha_inicio`, `fecha_fin`) |
+| GET | `/api/reportes/estado-resultados` | CONTADOR/GERENTE | Estado de Resultados (params: `fecha_inicio`, `fecha_fin`) |
+
+### Cierre de gestión (Etapa 7)
+| Método | Ruta | Rol | Descripción |
+|--------|------|-----|-------------|
+| GET | `/api/cierres` | CONTADOR/GERENTE | Lista de cierres |
+| GET | `/api/cierres/:id` | CONTADOR/GERENTE | Detalle de cierre |
+| POST | `/api/cierres` | CONTADOR | Cierra gestión anual (body: `{ anio }`) |
+
+### Dashboard (Etapa 8)
+| Método | Ruta | Rol | Descripción |
+|--------|------|-----|-------------|
+| GET | `/api/dashboard` | CONTADOR/GERENTE | KPIs (params: `gestion`, `mes`) → utilidad, IVA débito/crédito/neto, estado cierre |
+
+### Libros fiscales (Etapa 8)
+| Método | Ruta | Rol | Descripción |
+|--------|------|-----|-------------|
+| GET | `/api/libros-fiscales/compras` | CONTADOR/GERENTE | Libro de Compras (params: `mes`, `gestion`) |
+| GET | `/api/libros-fiscales/ventas` | CONTADOR/GERENTE | Libro de Ventas (params: `mes`, `gestion`) |
+
 ### Usuarios demo (seeder)
 | Usuario | Contraseña | Rol |
 |---------|-----------|-----|
@@ -77,5 +114,5 @@ Regla: Σdebe = Σhaber > 0; las cuentas deben permitir movimiento.
 
 ## Pruebas
 ```bash
-npm test        # Jest + Supertest
+npm test        # Jest + Supertest (69 tests)
 ```
