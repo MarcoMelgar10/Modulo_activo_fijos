@@ -23,7 +23,7 @@ npm run db:migrate && npm run db:seed && npm run dev   # :4000
 cd frontend && npm install && npm run dev              # :5173 (proxy /api → :4000)
 
 # Verificación (debe pasar siempre antes de commit)
-cd backend && npm run lint && npm test      # 57 tests
+cd backend && npm run lint && npm test      # 69 tests
 cd frontend && npm run lint && npm test && npm run build    # 3 tests
 
 # Health check

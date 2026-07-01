@@ -18,8 +18,8 @@
 | 5 | Libros contables (Diario/Mayor) | ✅ Completada |
 | 6 | Estados financieros | ✅ Completada |
 | 7 | Cierre de gestión | ✅ Completada |
-| 8 | Dashboard + cumplimiento fiscal SIN | ⬜ Pendiente |
-| 9 | Pruebas, calidad y despliegue | ⬜ Pendiente |
+| 8 | Dashboard + cumplimiento fiscal SIN | ✅ Completada |
+| 9 | Pruebas, calidad y despliegue | ✅ Completada |
 | 10 | **Presupuesto**: definición y aprobación (RF-PRE-01/02) | ⬜ Pendiente |
 | 11 | **Presupuesto**: ejecución y reportes (RF-PRE-03/04/05) | ⬜ Pendiente |
 
@@ -247,13 +247,61 @@ y seeders de eventos demo que produzcan asientos reales.
   `*.txt` de logs, `error.md`, `paso*.md`, `implementation_plan.md` y un `GUIA_CONTINUIDAD.md`
   duplicado dentro de `backend/`.
 
-### Para continuar (siguiente quien retome)
-1. `cd backend && npm install && npm run db:migrate && npm run db:seed` (crea/seedea la BD,
-   incluida la tabla `cierre_contable`).
-2. `npm test` para verificar (57 pruebas backend).
-3. **Siguiente parte a desarrollar: Etapa 8 — Dashboard + cumplimiento fiscal (SIN).**
-   Después: calidad/despliegue (9) y los módulos de Presupuesto (10–11).
+---
 
-> UI del módulo de Contabilidad COMPLETA hasta la Etapa 7: Login, Dashboard, Plan de
+## ✅ Etapa 8 — Dashboard + Cumplimiento Fiscal SIN (2026-07-01)
+
+**Objetivo:** dashboard ejecutivo con KPIs fiscales y Libro de Compras/Ventas (normativa SIN boliviana).
+
+### Entregado
+**Backend**
+- `services/dashboard.service.js`: compone `reporteService`, `reporteRepo` y `cierreRepo` (DIP).
+- `repositories/reporte.repository.js`: método `getIVAPorPeriodo()` — IVA débito (2.1.2) y crédito (1.1.5) del período.
+- `services/libro-fiscal.service.js`: Libro de Compras/Ventas con IVA desglosado por asiento.
+- `repositories/libro-fiscal.repository.js`: query por `tipo_origen` + rango de fechas.
+- Controllers, routes, validators (Zod) para ambos recursos.
+- Endpoints: `GET /api/dashboard?gestion=&mes=`, `GET /api/libros-fiscales/compras`, `GET /api/libros-fiscales/ventas`.
+- Tests: `dashboard.service.test.js` (6 tests), `libro-fiscal.service.test.js` (6 tests).
+
+**Frontend**
+- `pages/Dashboard.jsx` mejorado: KPIs (utilidad, IVA débito/crédito/neto), selector de mes, estado cierre.
+- `pages/LibroCompras.jsx` y `pages/LibroVentas.jsx`: tabla con IVA desglosado + exportar CSV.
+- Services, queries (React Query hooks) para ambos recursos.
+- Sidebar actualizado: "Libro de Compras" y "Libro de Ventas" en sección Reportes Financieros.
+
+### Verificación
+- Backend: **69/69 tests** ✓ · lint limpio ✓
+- Frontend: 3/3 tests ✓ · lint limpio ✓ · build OK ✓
+- Endpoints probados con curl: dashboard, compras, ventas — datos correctos ✓
+- Playwright: login, dashboard con KPIs, sidebar actualizado, navegación OK ✓
+
+---
+
+## ✅ Etapa 9 — Preparación para Despliegue (2026-07-01)
+
+**Objetivo:** dejar el proyecto deploy-ready para cualquier PaaS o VPS.
+
+### Entregado
+- `backend/Dockerfile`: multi-stage (`deps` + `producción`) con health check.
+- `frontend/Dockerfile`: multi-stage (`build` + `nginx`) con health check.
+- `.github/workflows/ci.yml`: job `docker` que verifica build de ambas imágenes.
+- `package.json` raíz: scripts de conveniencia (`dev`, `test`, `lint`, `db:migrate`, `db:seed`).
+- `DEPLOY.md`: guía de despliegue con Docker Compose y manual.
+- `backend/.env.template`: sección de producción documentada.
+- `.gitignore`: mejorado (Playwright, MiMoCode, Docker, etc.).
+
+### Verificación
+- `docker build -t contabilidad-backend ./backend` ✓
+- `docker build -t contabilidad-frontend ./frontend` ✓
+- Backend 69/69 tests ✓ · Frontend 3/3 tests ✓ · lint limpio en ambos ✓
+
+---
+
+### Para continuar (siguiente quien retome)
+1. `cd backend && npm install && npm run db:migrate && npm run db:seed`.
+2. `npm test` para verificar (69 pruebas backend).
+3. **Siguiente parte: Etapa 10 — Presupuesto (definición y aprobación, RF-PRE-01/02).**
+
+> UI del módulo de Contabilidad COMPLETA: Login, Dashboard (KPIs fiscales), Plan de
 > cuentas, Asientos, Simulador ERP, Libro Diario, Libro Mayor, Balance General,
-> Estado de Resultados y Cierre de gestión.
+> Estado de Resultados, Cierre de gestión, **Libro de Compras**, **Libro de Ventas**.

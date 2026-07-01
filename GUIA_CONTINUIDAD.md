@@ -165,12 +165,12 @@ Las definiciones exactas de columnas están en `documentacion.md` §3.6.4.
 | 1 | Auth, RBAC y Auditoría | ✅ Completada y verificada |
 | 2 | Plan de Cuentas | ✅ Completada y verificada |
 | 3 | Asientos manuales (partida doble) | ✅ Completada y verificada |
-| 4 | **Generación automática (API de eventos)** | ⏳ **SIGUIENTE** |
-| 5 | Libros contables (Diario/Mayor) | ⬜ |
-| 6 | Estados financieros | ⬜ |
-| 7 | Cierre de gestión | ⬜ |
-| 8 | Dashboard + cumplimiento fiscal SIN | ⬜ |
-| 9 | Pruebas, calidad y despliegue | ⬜ |
+| 4 | Generación automática (API de eventos) | ✅ Completada y verificada |
+| 5 | Libros contables (Diario/Mayor) | ✅ Completada y verificada |
+| 6 | Estados financieros | ✅ Completada y verificada |
+| 7 | Cierre de gestión | ✅ Completada y verificada |
+| 8 | Dashboard + cumplimiento fiscal SIN | ✅ Completada y verificada |
+| 9 | Pruebas, calidad y despliegue | ✅ Completada y verificada |
 | 10 | Presupuesto: definición y aprobación (RF-PRE-01/02) | ⬜ |
 | 11 | Presupuesto: ejecución y reportes (RF-PRE-03/04/05) | ⬜ |
 
@@ -181,9 +181,8 @@ Las definiciones exactas de columnas están en `documentacion.md` §3.6.4.
 
 Ver el detalle de cada etapa completada en `PROGRESO.md`.
 
-**Verificación al día de hoy:** backend 10/10 tests, frontend 3/3, lint limpio en ambos, build
-frontend OK, y flujo real probado contra MySQL+Redis (login, /me, logout con revocación,
-auditoría, plan de cuentas con árbol y RBAC).
+**Verificación al día de hoy:** backend 69/69 tests, frontend 3/3, lint limpio en ambos, build
+frontend OK, Docker builds OK.
 
 ---
 
@@ -317,21 +316,24 @@ Las etapas 5–9 están descritas en el plan aprobado y en `PROGRESO.md`.
 
 ---
 
-## Actualización 2026-06-28 (corrige datos previos de esta guía)
+## Actualización 2026-07-01 — Etapas 8 y 9
 
-Esta sección reemplaza la información desactualizada de arriba:
-
-- **Pruebas:** ahora son **backend 57** y **frontend 3** (antes esta guía decía 10/10).
-- **Tablas:** `asiento_contable`, `linea_asiento` y `cuenta_contable` **ya están creadas**
-  (no son "por crear"). Se añadió la tabla **`cierre_contable`** (Etapa 7).
-- **Etapas completadas:** 0, 1, 2, 3, **4, 5, 6 y 7**. Detalle completo en `PROGRESO.md`.
+- **Pruebas:** backend **69/69** · frontend 3/3.
+- **Etapas completadas:** 0–9. Detalle completo en `PROGRESO.md`.
+- **Siguiente:** Etapa 10 — Presupuesto (RF-PRE-01/02).
 
 ### Estado por capa
-- **Backend:** etapas 0–7 completas (auth, plan de cuentas, asientos, generación automática,
-  libros, estados financieros y cierre de gestión).
-- **Frontend:** completas Login, Dashboard, Cuentas, Asientos, **Simulador ERP**, **Libro Diario**,
-  **Libro Mayor**, **Balance General**, **Estado de Resultados** y **Cierres**. La UI del módulo
-  está completa hasta la Etapa 7. Siguiente parte: **Etapa 8 (Dashboard + SIN)**.
+- **Backend:** etapas 0–9 completas (auth, plan de cuentas, asientos, generación automática,
+  libros, estados financieros, cierre de gestión, **dashboard fiscal**, **libros fiscales**).
+- **Frontend:** completas Login, Dashboard (KPIs fiscales), Plan de cuentas, Asientos,
+  Simulador ERP, Libro Diario, Libro Mayor, Balance General, Estado de Resultados,
+  Cierres, **Libro de Compras**, **Libro de Ventas**.
+- **Deploy:** Dockerfiles multi-stage con health checks, CI/CD con Docker build job, DEPLOY.md.
+
+### Endpoints nuevos (Etapa 8)
+- `GET /api/dashboard?gestion=2026&mes=6` — KPIs: utilidad, IVA débito/crédito/neto, estado cierre.
+- `GET /api/libros-fiscales/compras?mes=6&gestion=2026` — Libro de Compras con IVA desglosado.
+- `GET /api/libros-fiscales/ventas?mes=6&gestion=2026` — Libro de Ventas con IVA desglosado.
 
 ### Receta para una nueva etapa (recordatorio)
 Backend: `model` → `migration` → `repository` → `service` → `validator` → `controller` →
