@@ -7,8 +7,9 @@ node_modules/
 dist/
 build/
 coverage/
+.next/
 
-# Environment
+# Environment (NUNCA versionar .env)
 .env
 .env.local
 .env.*.local
@@ -17,13 +18,48 @@ coverage/
 logs/
 *.log
 npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
-# Editor / OS
+# Editor / IDE
 .DS_Store
 Thumbs.db
 .idea/
 *.swp
+*.swo
+*~
+.vscode/settings.json
+*.sublime-project
+*.sublime-workspace
+
+# OS
+desktop.ini
+._*
+
+# Testing / Coverage
+.nyc_output/
+lcov.info
+junit.xml
 
 # Misc
 .cache/
 .vite/
+.eslintcache
+*.tsbuildinfo
+
+# Playwright
+.playwright/
+.playwright-cli/
+playwright-report/
+test-results/
+*.webm
+
+# Docker
+mysql_data/
+
+# Sequelize
+backend/database/*.sqlite
+
+# MiMoCode / Claude
+.mimocode/
+.claude/

@@ -6,6 +6,8 @@ import eventoRoutes from './evento.routes.js';
 import libroRoutes from './libro.routes.js';
 import reporteRoutes from './reporte.routes.js';
 import cierreRoutes from './cierre.routes.js';
+import dashboardRoutes from './dashboard.routes.js';
+import libroFiscalRoutes from './libro-fiscal.routes.js';
 
 const router = Router();
 
@@ -20,5 +22,7 @@ router.use('/eventos-contables', eventoRoutes);
 router.use('/libros', libroRoutes);
 router.use('/reportes', reporteRoutes);
 router.use('/cierres', cierreRoutes);
+router.use('/dashboard', dashboardRoutes);
+router.use('/libros-fiscales', libroFiscalRoutes);
 
 export default router;

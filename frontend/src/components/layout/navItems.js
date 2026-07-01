@@ -9,4 +9,6 @@ export const navItems = [
   { to: '/libro-mayor', label: 'Libro Mayor', section: 'Reportes Financieros' },
   { to: '/balance-general', label: 'Balance General', section: 'Reportes Financieros' },
   { to: '/estado-resultados', label: 'Estado de Resultados', section: 'Reportes Financieros' },
+  { to: '/libro-compras', label: 'Libro de Compras', section: 'Reportes Financieros' },
+  { to: '/libro-ventas', label: 'Libro de Ventas', section: 'Reportes Financieros' },
 ];

@@ -11,6 +11,8 @@ import { BalanceGeneral } from '../pages/BalanceGeneral.jsx';
 import { EstadoResultados } from '../pages/EstadoResultados.jsx';
 import { SimuladorEventos } from '../pages/SimuladorEventos.jsx';
 import { Cierres } from '../pages/Cierres.jsx';
+import { LibroCompras } from '../pages/LibroCompras.jsx';
+import { LibroVentas } from '../pages/LibroVentas.jsx';
 
 // Roles con acceso al módulo de Contabilidad.
 const CONTABLES = ['CONTADOR', 'GERENTE'];
@@ -34,6 +36,8 @@ const router = createBrowserRouter([
       { path: 'estado-resultados', element: <EstadoResultados /> },
       { path: 'simulador-erp', element: <SimuladorEventos /> },
       { path: 'cierres', element: <Cierres /> },
+      { path: 'libro-compras', element: <LibroCompras /> },
+      { path: 'libro-ventas', element: <LibroVentas /> },
     ],
   },
 ]);

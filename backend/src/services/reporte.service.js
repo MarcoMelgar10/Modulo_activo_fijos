@@ -22,7 +22,7 @@ function propagarHaciaArriba(nodoMap, nivelesDesc) {
     for (const nodo of nodoMap.values()) {
       if (nodo.nivel !== nivel) continue;
       if (nodo.saldo_cents === 0) continue;
-      if (nodo.id_cuenta_padre == null) continue;
+      if (nodo.id_cuenta_padre === null) continue;
       const padre = nodoMap.get(nodo.id_cuenta_padre);
       if (padre) padre.saldo_cents += nodo.saldo_cents;
     }
@@ -68,7 +68,7 @@ function purgarArbol(nodoMap) {
       while (actual) {
         if (activos.has(actual.id_cuenta)) break;
         activos.add(actual.id_cuenta);
-        actual = actual.id_cuenta_padre != null ? nodoMap.get(actual.id_cuenta_padre) : null;
+        actual = actual.id_cuenta_padre !== null ? nodoMap.get(actual.id_cuenta_padre) : null;
       }
     }
   }
@@ -93,7 +93,7 @@ function purgarArbol(nodoMap) {
 function totalRaizCents(nodoMap, tipo) {
   let total = 0;
   for (const nodo of nodoMap.values()) {
-    if (nodo.tipo === tipo && nodo.id_cuenta_padre == null) total += nodo.saldo_cents;
+    if (nodo.tipo === tipo && nodo.id_cuenta_padre === null) total += nodo.saldo_cents;
   }
   return total;
 }
