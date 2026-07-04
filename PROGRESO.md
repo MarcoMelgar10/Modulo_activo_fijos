@@ -2,8 +2,8 @@
 
 > Documento de avance para el equipo. Se actualiza al cerrar cada etapa del plan.
 
-**Última actualización:** 2026-07-03
-**Etapa actual:** ✅ Todo el ERP salvo lo excluido + ✅ **Dashboard gerencial (RF-REP-01)** → ⏭️ pendiente solo: inventario avanzado (RF-INV-03/04/05), multi-sucursal (RF-USR-05), export Excel (RF-REP-02)
+**Última actualización:** 2026-07-04
+**Etapa actual:** ✅ Todo el ERP + ✅ **Multisucursal, Traspasos y Biometría** → ⏭️ pendiente: export Excel (RF-REP-02)
 **Stack:** Node 20 + Express + Sequelize + MySQL 8 + Redis 7 (backend) · React 18 + Vite + Tailwind (frontend)
 
 ## Resumen de estado
@@ -26,6 +26,10 @@
 | R1 | **Export PDF + Auditoría (RF-REP-03) + Flujo de Caja (RF-CON-03)** | ✅ Completada |
 | 10 | **Presupuesto**: definición y aprobación (RF-PRE-01/02) | ✅ Completada |
 | 11 | **Presupuesto**: ejecución y reportes (RF-PRE-03/04/05) | ✅ Completada |
+| M1 | **Multisucursal**: CRUD sucursales, scope por rol, seeder 8 sucursales | ✅ Completada |
+| M2 | **Inventario por sucursal**: stock agregado por producto/sucursal | ✅ Completada |
+| M3 | **Traspasos**: transferencia entre sucursales con estados y atomicidad | ✅ Completada |
+| M4 | **Biometría**: control de acceso a bodegas con dispositivos y simulador | ✅ Completada |
 
 > **Nota de alcance:** además de Contabilidad, el proyecto incluye el **módulo de Presupuesto**
 > (Fase B, Etapas 10–11), que se desarrolla tras Contabilidad porque su control de ejecución se
