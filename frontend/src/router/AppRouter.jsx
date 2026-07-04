@@ -30,6 +30,8 @@ import { EjecucionPresupuesto } from '../pages/EjecucionPresupuesto.jsx';
 import { Sucursales } from '../pages/Sucursales.jsx';
 import { Inventario } from '../pages/Inventario.jsx';
 import { Traspasos } from '../pages/Traspasos.jsx';
+import { DispositivosBiometricos } from '../pages/DispositivosBiometricos.jsx';
+import { AccesosBiometricos } from '../pages/AccesosBiometricos.jsx';
 
 // Guard por rol reutilizando ProtectedRoute.
 const guard = (element, roles) => <ProtectedRoute roles={roles}>{element}</ProtectedRoute>;
@@ -69,6 +71,8 @@ const router = createBrowserRouter([
       { path: 'productos', element: guard(<Productos />, ACCESO.INVENTARIO) },
       { path: 'inventario', element: guard(<Inventario />, ACCESO.INVENTARIO) },
       { path: 'traspasos', element: guard(<Traspasos />, ACCESO.TRASPASOS) },
+      { path: 'accesos-biometricos', element: guard(<AccesosBiometricos />, ACCESO.BIOMETRIA) },
+      { path: 'dispositivos-biometricos', element: guard(<DispositivosBiometricos />, ACCESO.SUCURSALES) },
 
       // Contabilidad y Reportes Financieros (CONTADOR + GERENTE)
       { path: 'cuentas', element: guard(<Cuentas />, ACCESO.CONTABILIDAD) },

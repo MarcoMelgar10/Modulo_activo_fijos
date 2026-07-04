@@ -23,6 +23,8 @@ import { Presupuesto } from './Presupuesto.js';
 import { LineaPresupuesto } from './LineaPresupuesto.js';
 import { Traspaso } from './Traspaso.js';
 import { DetalleTraspaso } from './DetalleTraspaso.js';
+import { DispositivoBiometrico } from './DispositivoBiometrico.js';
+import { AccesoBiometrico } from './AccesoBiometrico.js';
 
 // ---- Asociaciones ----
 Sucursal.hasMany(Empleado, { foreignKey: 'id_sucursal', as: 'empleados' });
@@ -123,6 +125,16 @@ DetalleTraspaso.belongsTo(Traspaso, { foreignKey: 'id_traspaso', as: 'traspaso' 
 DetalleTraspaso.belongsTo(Lote, { foreignKey: 'id_lote', as: 'loteOrigen' });
 DetalleTraspaso.belongsTo(Lote, { foreignKey: 'id_lote_destino', as: 'loteDestino' });
 
+// ---- Control biométrico ----
+Sucursal.hasMany(DispositivoBiometrico, { foreignKey: 'id_sucursal', as: 'dispositivosBiometricos' });
+DispositivoBiometrico.belongsTo(Sucursal, { foreignKey: 'id_sucursal', as: 'sucursal' });
+Sucursal.hasMany(AccesoBiometrico, { foreignKey: 'id_sucursal', as: 'accesosBiometricos' });
+AccesoBiometrico.belongsTo(Sucursal, { foreignKey: 'id_sucursal', as: 'sucursal' });
+Empleado.hasMany(AccesoBiometrico, { foreignKey: 'id_empleado', as: 'accesosBiometricos' });
+AccesoBiometrico.belongsTo(Empleado, { foreignKey: 'id_empleado', as: 'empleado' });
+DispositivoBiometrico.hasMany(AccesoBiometrico, { foreignKey: 'dispositivo_id', as: 'eventos' });
+AccesoBiometrico.belongsTo(DispositivoBiometrico, { foreignKey: 'dispositivo_id', as: 'dispositivo' });
+
 export {
   sequelize,
   Rol,
@@ -149,4 +161,6 @@ export {
   LineaPresupuesto,
   Traspaso,
   DetalleTraspaso,
+  DispositivoBiometrico,
+  AccesoBiometrico,
 };

@@ -19,6 +19,8 @@ import presupuestoRoutes from './presupuesto.routes.js';
 import sucursalRoutes from './sucursal.routes.js';
 import inventarioRoutes from './inventario.routes.js';
 import traspasoRoutes from './traspaso.routes.js';
+import dispositivoBiometricoRoutes from './dispositivo-biometrico.routes.js';
+import accesoBiometricoRoutes from './acceso-biometrico.routes.js';
 
 const router = Router();
 
@@ -47,5 +49,7 @@ router.use('/presupuestos', presupuestoRoutes);
 router.use('/sucursales', sucursalRoutes);
 router.use('/inventario', inventarioRoutes);
 router.use('/traspasos', traspasoRoutes);
+router.use('/dispositivos-biometricos', dispositivoBiometricoRoutes);
+router.use('/accesos-biometricos', accesoBiometricoRoutes);
 
 export default router;

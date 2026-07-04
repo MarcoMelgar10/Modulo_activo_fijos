@@ -15,6 +15,8 @@ export const navItems = [
   { to: '/productos', label: 'Productos', section: 'Inventario', roles: ACCESO.INVENTARIO },
   { to: '/inventario', label: 'Inventario por sucursal', section: 'Inventario', roles: ACCESO.INVENTARIO },
   { to: '/traspasos', label: 'Traspasos', section: 'Inventario', roles: ACCESO.TRASPASOS },
+  { to: '/accesos-biometricos', label: 'Accesos biometricos', section: 'Inventario', roles: ACCESO.BIOMETRIA },
+  { to: '/dispositivos-biometricos', label: 'Dispositivos biometricos', section: 'Administración', roles: ACCESO.SUCURSALES },
 
   { to: '/presupuestos', label: 'Presupuestos', section: 'Presupuesto', roles: ACCESO.PRESUPUESTO },
   { to: '/ejecucion-presupuesto', label: 'Ejecución presupuestaria', section: 'Presupuesto', roles: ACCESO.PRESUPUESTO },
