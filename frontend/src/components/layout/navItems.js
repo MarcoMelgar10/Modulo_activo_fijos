@@ -13,6 +13,7 @@ export const navItems = [
   { to: '/cuentas-por-pagar', label: 'Cuentas por pagar', section: 'Compras', roles: ACCESO.COMPRAS },
 
   { to: '/productos', label: 'Productos', section: 'Inventario', roles: ACCESO.INVENTARIO },
+  { to: '/inventario', label: 'Inventario por sucursal', section: 'Inventario', roles: ACCESO.INVENTARIO },
 
   { to: '/presupuestos', label: 'Presupuestos', section: 'Presupuesto', roles: ACCESO.PRESUPUESTO },
   { to: '/ejecucion-presupuesto', label: 'Ejecución presupuestaria', section: 'Presupuesto', roles: ACCESO.PRESUPUESTO },
