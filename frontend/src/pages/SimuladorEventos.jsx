@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useSimularEvento } from '../queries/useEventos.js';
+import { useSucursales } from '../queries/useSucursales.js';
 import {
   PageHeader,
   Card,
@@ -67,6 +68,7 @@ const EVENTOS_ERP = [
 
 export function SimuladorEventos() {
   const simular = useSimularEvento();
+  const { data: sucursales = [] } = useSucursales();
 
   // Estados de control
   const [selectedEvento, setSelectedEvento] = useState(null); // Evento seleccionado para abrir el modal
@@ -200,9 +202,9 @@ export function SimuladorEventos() {
               onChange={(e) => setSucursalId(e.target.value)}
               disabled={simular.isPending}
             >
-              {[1, 2, 3, 4, 5, 6, 7, 8].map((num) => (
-                <option key={num} value={num}>
-                  Sucursal {num}
+              {sucursales.map((s) => (
+                <option key={s.id_sucursal} value={s.id_sucursal}>
+                  {s.nombre}
                 </option>
               ))}
             </Select>

@@ -20,7 +20,7 @@ export const cierreController = {
     const resultado = await cierreService.cerrarPeriodo({
       anio,
       idEmpleado: req.user.id,
-      idSucursal: req.user.id_sucursal ?? 1,
+      idSucursal: req.user.id_sucursal,
     });
     await auditService.log({
       idEmpleado: req.user.id,

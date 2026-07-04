@@ -9,7 +9,7 @@ const lineaSchema = z.object({
 });
 
 export const crearAsientoSchema = z.object({
-  id_sucursal: z.number().int().positive().default(1),
+  id_sucursal: z.number().int().positive(),
   fecha: z
     .string()
     .regex(/^\d{4}-\d{2}-\d{2}$/, 'La fecha debe tener formato AAAA-MM-DD')

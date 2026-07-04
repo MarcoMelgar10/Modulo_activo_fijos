@@ -68,7 +68,7 @@ describe('VentaService', () => {
       { id_lote: 2, cantidad_actual: 10, fecha_vencimiento: '2026-09-01' },
     ]);
 
-    await service.crear({ lineas: [{ id_producto: 5, cantidad: 15 }] }, 2);
+    await service.crear({ id_sucursal: 1, lineas: [{ id_producto: 5, cantidad: 15 }] }, 2);
 
     // Primero agota el lote que vence antes (id 1: 10 u), luego toma 5 del lote 2.
     expect(deps.loteRepo.descontar).toHaveBeenCalledWith(1, 10, expect.anything());
@@ -76,7 +76,7 @@ describe('VentaService', () => {
   });
 
   it('cobra a Bancos cuando el método de pago es tarjeta', async () => {
-    await service.crear({ metodo_pago: 'TARJETA_DEBITO', lineas: [{ id_producto: 5, cantidad: 1 }] }, 2);
+    await service.crear({ id_sucursal: 1, metodo_pago: 'TARJETA_DEBITO', lineas: [{ id_producto: 5, cantidad: 1 }] }, 2);
     const data = deps.asientoService.crear.mock.calls[0][0];
     const bancos = data.lineas.find((l) => l.id_cuenta === 4);
     expect(bancos.debe).toBe(8);
@@ -84,12 +84,12 @@ describe('VentaService', () => {
 
   it('rechaza la venta si no hay stock suficiente', async () => {
     deps.loteRepo.findDisponiblesFEFO.mockResolvedValue([{ id_lote: 1, cantidad_actual: 3, fecha_vencimiento: '2026-08-01' }]);
-    await expect(service.crear({ lineas: [{ id_producto: 5, cantidad: 10 }] }, 2)).rejects.toThrow(/insuficiente/);
+    await expect(service.crear({ id_sucursal: 1, lineas: [{ id_producto: 5, cantidad: 10 }] }, 2)).rejects.toThrow(/insuficiente/);
     expect(deps.asientoService.crear).not.toHaveBeenCalled();
   });
 
   it('aplica el descuento sobre el total cobrado', async () => {
-    await service.crear({ descuento: 4, lineas: [{ id_producto: 5, cantidad: 5 }] }, 2);
+    await service.crear({ id_sucursal: 1, descuento: 4, lineas: [{ id_producto: 5, cantidad: 5 }] }, 2);
     const data = deps.asientoService.crear.mock.calls[0][0];
     const caja = data.lineas.find((l) => l.id_cuenta === 3);
     expect(caja.debe).toBe(36); // 40 − 4 de descuento

@@ -33,4 +33,8 @@ export const usuarioRepository = {
   findRolById(id) {
     return Rol.findByPk(id);
   },
+
+  findSucursalById(id) {
+    return Sucursal.findByPk(id);
+  },
 };

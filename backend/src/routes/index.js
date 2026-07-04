@@ -16,6 +16,7 @@ import ventaRoutes from './venta.routes.js';
 import usuarioRoutes from './usuario.routes.js';
 import auditoriaRoutes from './auditoria.routes.js';
 import presupuestoRoutes from './presupuesto.routes.js';
+import sucursalRoutes from './sucursal.routes.js';
 
 const router = Router();
 
@@ -41,5 +42,6 @@ router.use('/ventas', ventaRoutes);
 router.use('/usuarios', usuarioRoutes);
 router.use('/auditoria', auditoriaRoutes);
 router.use('/presupuestos', presupuestoRoutes);
+router.use('/sucursales', sucursalRoutes);
 
 export default router;

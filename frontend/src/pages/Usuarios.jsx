@@ -6,13 +6,15 @@ import {
   useActualizarUsuario,
   useCambiarEstadoUsuario,
 } from '../queries/useUsuarios.js';
+import { useSucursales } from '../queries/useSucursales.js';
 import { PageHeader, Card, Button, Input, Select, Modal, Badge, Spinner, EmptyState } from '../components/ui';
 
 const rolTono = { GERENTE: 'accent', CONTADOR: 'success', CAJERO: 'warning', BODEGUERO: 'neutral' };
-const vacio = { nombre: '', apellido: '', usuario: '', password: '', id_rol: '' };
+const vacio = { nombre: '', apellido: '', usuario: '', password: '', id_rol: '', id_sucursal: '' };
 
 function UsuarioModal({ open, onClose, usuario }) {
   const { data: roles = [] } = useRoles();
+  const { data: sucursales = [] } = useSucursales();
   const crear = useCrearUsuario();
   const actualizar = useActualizarUsuario();
   const editando = Boolean(usuario);
@@ -24,7 +26,7 @@ function UsuarioModal({ open, onClose, usuario }) {
     setPrev(usuario);
     setForm(
       usuario
-        ? { nombre: usuario.nombre, apellido: usuario.apellido, usuario: usuario.usuario, password: '', id_rol: String(usuario.id_rol) }
+        ? { nombre: usuario.nombre, apellido: usuario.apellido, usuario: usuario.usuario, password: '', id_rol: String(usuario.id_rol), id_sucursal: String(usuario.id_sucursal || '') }
         : vacio,
     );
     setError(null);
@@ -40,6 +42,7 @@ function UsuarioModal({ open, onClose, usuario }) {
           nombre: form.nombre.trim(),
           apellido: form.apellido.trim(),
           id_rol: Number(form.id_rol),
+          id_sucursal: Number(form.id_sucursal),
         };
         if (form.password) payload.password = form.password;
         await actualizar.mutateAsync({ id: usuario.id_empleado, payload });
@@ -50,6 +53,7 @@ function UsuarioModal({ open, onClose, usuario }) {
           usuario: form.usuario.trim(),
           password: form.password,
           id_rol: Number(form.id_rol),
+          id_sucursal: Number(form.id_sucursal),
         });
       }
       onClose();
@@ -59,7 +63,7 @@ function UsuarioModal({ open, onClose, usuario }) {
   };
 
   const pending = crear.isPending || actualizar.isPending;
-  const puedeGuardar = form.nombre && form.apellido && form.id_rol && (editando || (form.usuario && form.password));
+  const puedeGuardar = form.nombre && form.apellido && form.id_rol && form.id_sucursal && (editando || (form.usuario && form.password));
 
   return (
     <Modal
@@ -90,6 +94,12 @@ function UsuarioModal({ open, onClose, usuario }) {
           <option value="">— Seleccionar —</option>
           {roles.map((r) => (
             <option key={r.id_rol} value={r.id_rol}>{r.nombre}</option>
+          ))}
+        </Select>
+        <Select id="sucursal" label="Sucursal" value={form.id_sucursal} onChange={set('id_sucursal')}>
+          <option value="">— Seleccionar —</option>
+          {sucursales.map((s) => (
+            <option key={s.id_sucursal} value={s.id_sucursal}>{s.nombre}</option>
           ))}
         </Select>
         <p className="text-xs text-ink-soft leading-relaxed">

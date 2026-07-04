@@ -26,7 +26,12 @@ export function createUsuarioService({ repo = usuarioRepository, hasher = bcrypt
       return usuario;
     },
 
-    async crear({ nombre, apellido, usuario, password, id_rol, id_sucursal = 1 }) {
+    async crear({ nombre, apellido, usuario, password, id_rol, id_sucursal }) {
+      if (!id_sucursal) throw ApiError.badRequest('La sucursal es obligatoria');
+      const sucursal = await repo.findSucursalById?.(id_sucursal);
+      if (sucursal && sucursal.estado !== 'ACTIVA') {
+        throw ApiError.badRequest('La sucursal no está activa');
+      }
       if (await repo.findByUsuario(usuario)) {
         throw ApiError.conflict(`El usuario "${usuario}" ya existe`);
       }

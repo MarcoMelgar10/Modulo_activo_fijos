@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useLibroDiario } from '../queries/useLibros.js';
+import { useSucursales } from '../queries/useSucursales.js';
 import {
   PageHeader,
   Card,
@@ -15,6 +16,7 @@ import { formatBs, formatFecha } from '../lib/format.js';
 import { exportarPDF, pdfBs } from '../lib/pdf.js';
 
 export function LibroDiario() {
+  const { data: sucursales = [] } = useSucursales();
   const [form, setForm] = useState({
     fecha_inicio: '',
     fecha_fin: '',
@@ -95,9 +97,9 @@ export function LibroDiario() {
               onChange={(e) => setForm({ ...form, id_sucursal: e.target.value })}
             >
               <option value="">— Todas —</option>
-              {[1, 2, 3, 4, 5, 6, 7, 8].map((num) => (
-                <option key={num} value={num}>
-                  Sucursal {num}
+              {sucursales.map((s) => (
+                <option key={s.id_sucursal} value={s.id_sucursal}>
+                  {s.nombre}
                 </option>
               ))}
             </Select>

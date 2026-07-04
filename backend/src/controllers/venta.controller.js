@@ -2,6 +2,7 @@ import { asyncHandler } from '../utils/asyncHandler.js';
 import { ventaService } from '../services/venta.service.js';
 import { devolucionService } from '../services/devolucion.service.js';
 import { auditService } from '../services/audit.service.js';
+import { requireSucursalOperativa, scopeSucursalLectura } from '../utils/sucursalScope.js';
 
 const ip = (req) => req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip;
 
@@ -35,7 +36,8 @@ export const ventaController = {
   }),
 
   crear: asyncHandler(async (req, res) => {
-    const venta = await ventaService.crear(req.body, req.user.id);
+    const idSucursal = requireSucursalOperativa(req.user, req.body.id_sucursal);
+    const venta = await ventaService.crear({ ...req.body, id_sucursal: idSucursal }, req.user.id);
     await auditService.log({
       idEmpleado: req.user.id,
       ip: ip(req),

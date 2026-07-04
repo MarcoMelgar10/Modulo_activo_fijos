@@ -83,7 +83,8 @@ export function createOrdenCompraService({
       return orden;
     },
 
-    async crear({ id_proveedor, id_sucursal = 1, fecha_emision, condicion_pago = 'CREDITO', lineas }, empleadoId = null) {
+    async crear({ id_proveedor, id_sucursal, fecha_emision, condicion_pago = 'CREDITO', lineas }, empleadoId = null) {
+      if (!id_sucursal) throw ApiError.badRequest('La sucursal es obligatoria');
       const proveedor = await proveedorRepo.findById(id_proveedor);
       if (!proveedor) throw ApiError.badRequest('El proveedor indicado no existe');
       if (!proveedor.activo) throw ApiError.badRequest('El proveedor está inactivo');

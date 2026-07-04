@@ -27,6 +27,7 @@ import { FlujoCaja } from '../pages/FlujoCaja.jsx';
 import { Auditoria } from '../pages/Auditoria.jsx';
 import { Presupuestos } from '../pages/Presupuestos.jsx';
 import { EjecucionPresupuesto } from '../pages/EjecucionPresupuesto.jsx';
+import { Sucursales } from '../pages/Sucursales.jsx';
 
 // Guard por rol reutilizando ProtectedRoute.
 const guard = (element, roles) => <ProtectedRoute roles={roles}>{element}</ProtectedRoute>;
@@ -85,6 +86,7 @@ const router = createBrowserRouter([
       // Administración (GERENTE)
       { path: 'usuarios', element: guard(<Usuarios />, ACCESO.USUARIOS) },
       { path: 'auditoria', element: guard(<Auditoria />, ACCESO.USUARIOS) },
+      { path: 'sucursales', element: guard(<Sucursales />, ACCESO.SUCURSALES) },
     ],
   },
 ]);

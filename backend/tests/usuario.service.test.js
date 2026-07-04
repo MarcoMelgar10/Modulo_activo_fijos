@@ -10,6 +10,7 @@ function buildDeps() {
       create: jest.fn().mockImplementation(async (d) => ({ id_empleado: 5, ...d })),
       findRoles: jest.fn().mockResolvedValue([]),
       findRolById: jest.fn().mockResolvedValue({ id_rol: 4, nombre: 'CONTADOR' }),
+      findSucursalById: jest.fn().mockResolvedValue({ id_sucursal: 1, estado: 'ACTIVA' }),
     },
     hasher: { hash: jest.fn().mockResolvedValue('HASH') },
   };
@@ -25,7 +26,7 @@ describe('UsuarioService', () => {
     deps.repo.findById.mockResolvedValue({ id_empleado: 5, usuario: 'nuevo', rol: { nombre: 'CONTADOR' } });
   });
 
-  const base = { nombre: 'Ana', apellido: 'Pérez', usuario: 'anap', password: 'Secret123', id_rol: 4 };
+  const base = { nombre: 'Ana', apellido: 'Pérez', usuario: 'anap', password: 'Secret123', id_rol: 4, id_sucursal: 1 };
 
   it('crea un usuario con la contraseña hasheada y rol asignado', async () => {
     await service.crear(base);

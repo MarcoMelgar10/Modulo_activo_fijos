@@ -44,6 +44,7 @@ describe('OrdenCompraService', () => {
       deps.repo.findById.mockResolvedValue({ id_orden: 1 });
       await service.crear({
         id_proveedor: 2,
+        id_sucursal: 1,
         fecha_emision: '2026-07-02',
         condicion_pago: 'CREDITO',
         lineas: [{ id_producto: 5, cantidad: 10, precio_unitario: 100 }],
@@ -58,6 +59,7 @@ describe('OrdenCompraService', () => {
       await expect(
         service.crear({
           id_proveedor: 2,
+          id_sucursal: 1,
           fecha_emision: '2026-07-02',
           lineas: [{ id_producto: 999, cantidad: 1, precio_unitario: 10 }],
         }),

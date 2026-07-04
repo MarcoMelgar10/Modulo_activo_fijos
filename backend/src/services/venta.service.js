@@ -78,7 +78,8 @@ export function createVentaService({
       return venta;
     },
 
-    async crear({ id_sucursal = 1, fecha, metodo_pago = 'EFECTIVO', descuento = 0, lineas }, cajeroId) {
+    async crear({ id_sucursal, fecha, metodo_pago = 'EFECTIVO', descuento = 0, lineas }, cajeroId) {
+      if (!id_sucursal) throw ApiError.badRequest('La sucursal es obligatoria');
       if (!Array.isArray(lineas) || lineas.length === 0) {
         throw ApiError.badRequest('La venta requiere al menos una línea');
       }

@@ -11,6 +11,7 @@ export const crearUsuarioSchema = z.object({
     .regex(/^\S+$/, 'El usuario no puede contener espacios'),
   password: z.string().min(6, 'La contraseña debe tener al menos 6 caracteres').max(100),
   id_rol: z.number().int().positive('El rol es obligatorio'),
+  id_sucursal: z.number().int().positive('La sucursal es obligatoria'),
 });
 
 export const actualizarUsuarioSchema = z
@@ -18,6 +19,7 @@ export const actualizarUsuarioSchema = z
     nombre: z.string().trim().min(1).max(100).optional(),
     apellido: z.string().trim().min(1).max(100).optional(),
     id_rol: z.number().int().positive().optional(),
+    id_sucursal: z.number().int().positive().optional(),
     activo: z.boolean().optional(),
     password: z.string().min(6, 'La contraseña debe tener al menos 6 caracteres').max(100).optional(),
   })

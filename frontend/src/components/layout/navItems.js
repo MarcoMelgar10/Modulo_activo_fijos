@@ -32,4 +32,5 @@ export const navItems = [
 
   { to: '/usuarios', label: 'Usuarios', section: 'Administración', roles: ACCESO.USUARIOS },
   { to: '/auditoria', label: 'Auditoría', section: 'Administración', roles: ACCESO.USUARIOS },
+  { to: '/sucursales', label: 'Sucursales', section: 'Administración', roles: ACCESO.SUCURSALES },
 ];

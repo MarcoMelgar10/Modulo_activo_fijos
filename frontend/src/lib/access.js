@@ -7,6 +7,9 @@ export const ACCESO = {
   INVENTARIO: ['GERENTE', 'BODEGUERO'],
   PRESUPUESTO: ['GERENTE', 'CONTADOR'],
   USUARIOS: ['GERENTE'],
+  SUCURSALES: ['GERENTE'],
+  TRASPASOS: ['GERENTE', 'BODEGUERO'],
+  BIOMETRIA: ['GERENTE', 'BODEGUERO'],
 };
 
 // Página inicial según el rol (a dónde llega tras iniciar sesión).

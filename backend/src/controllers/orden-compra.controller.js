@@ -1,6 +1,7 @@
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { ordenCompraService } from '../services/orden-compra.service.js';
 import { auditService } from '../services/audit.service.js';
+import { requireSucursalOperativa } from '../utils/sucursalScope.js';
 
 const ip = (req) => req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip;
 
@@ -20,7 +21,8 @@ export const ordenCompraController = {
   }),
 
   crear: asyncHandler(async (req, res) => {
-    const orden = await ordenCompraService.crear(req.body, req.user.id);
+    const idSucursal = requireSucursalOperativa(req.user, req.body.id_sucursal);
+    const orden = await ordenCompraService.crear({ ...req.body, id_sucursal: idSucursal }, req.user.id);
     await auditService.log({
       idEmpleado: req.user.id,
       ip: ip(req),

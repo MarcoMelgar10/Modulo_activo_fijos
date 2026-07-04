@@ -1,16 +1,22 @@
 import { useState } from 'react';
 import { useProductos } from '../queries/useProductos.js';
 import { useCrearVenta } from '../queries/useVentas.js';
+import { useSucursales } from '../queries/useSucursales.js';
+import { useAuth } from '../store/AuthContext.jsx';
 import { PageHeader, Card, CardBody, CardTitle, Button, Input, Select, Badge, EmptyState } from '../components/ui';
 import { formatBs } from '../lib/format.js';
 
 const METODOS = ['EFECTIVO', 'TARJETA_DEBITO', 'TARJETA_CREDITO', 'QR'];
 
 export function PuntoVenta() {
+  const { user } = useAuth();
   const { data: productos = [] } = useProductos({ activo: true });
+  const { data: sucursales = [] } = useSucursales();
   const crear = useCrearVenta();
+  const esGerente = user?.rol?.nombre === 'GERENTE';
 
   const [carrito, setCarrito] = useState([]);
+  const [sucursalSel, setSucursalSel] = useState(String(user?.id_sucursal || ''));
   const [prodSel, setProdSel] = useState('');
   const [cantidad, setCantidad] = useState('1');
   const [metodo, setMetodo] = useState('EFECTIVO');
@@ -45,7 +51,7 @@ export function PuntoVenta() {
     setExito(null);
     try {
       const venta = await crear.mutateAsync({
-        id_sucursal: 1,
+        id_sucursal: esGerente ? Number(sucursalSel || user.id_sucursal) : user.id_sucursal,
         metodo_pago: metodo,
         descuento: Number(descuento || 0),
         lineas: carrito.map((l) => ({ id_producto: l.id_producto, cantidad: l.cantidad, precio_unitario: l.precio_unitario })),
@@ -122,6 +128,13 @@ export function PuntoVenta() {
         <Card>
           <CardBody className="space-y-4">
             <CardTitle className="text-base">Cobro</CardTitle>
+            {esGerente ? (
+              <Select id="sucursal" label="Sucursal" value={sucursalSel} onChange={(e) => setSucursalSel(e.target.value)}>
+                {sucursales.map((s) => <option key={s.id_sucursal} value={s.id_sucursal}>{s.nombre}</option>)}
+              </Select>
+            ) : (
+              <p className="text-sm text-ink-muted">Sucursal: {sucursales.find((s) => s.id_sucursal === user?.id_sucursal)?.nombre || user?.id_sucursal}</p>
+            )}
             <Select id="metodo" label="Método de pago" value={metodo} onChange={(e) => setMetodo(e.target.value)}>
               {METODOS.map((m) => (<option key={m} value={m}>{m.replace('_', ' ')}</option>))}
             </Select>

@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useLibroMayor } from '../queries/useLibros.js';
 import { useCuentasPlanas } from '../queries/useCuentas.js';
+import { useSucursales } from '../queries/useSucursales.js';
 import {
   PageHeader,
   Card,
@@ -15,6 +16,7 @@ import { formatBs, formatFecha } from '../lib/format.js';
 import { exportarPDF, pdfBs } from '../lib/pdf.js';
 
 export function LibroMayor() {
+  const { data: sucursales = [] } = useSucursales();
   const { data: cuentasPlanas = [] } = useCuentasPlanas();
 
   // Filtrar en el cliente las cuentas que permiten movimiento
@@ -145,9 +147,9 @@ export function LibroMayor() {
               onChange={(e) => setForm({ ...form, id_sucursal: e.target.value })}
             >
               <option value="">— Todas —</option>
-              {[1, 2, 3, 4, 5, 6, 7, 8].map((num) => (
-                <option key={num} value={num}>
-                  Sucursal {num}
+              {sucursales.map((s) => (
+                <option key={s.id_sucursal} value={s.id_sucursal}>
+                  {s.nombre}
                 </option>
               ))}
             </Select>
