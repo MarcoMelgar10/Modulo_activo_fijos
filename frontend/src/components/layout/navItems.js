@@ -14,6 +14,7 @@ export const navItems = [
 
   { to: '/productos', label: 'Productos', section: 'Inventario', roles: ACCESO.INVENTARIO },
   { to: '/inventario', label: 'Inventario por sucursal', section: 'Inventario', roles: ACCESO.INVENTARIO },
+  { to: '/traspasos', label: 'Traspasos', section: 'Inventario', roles: ACCESO.TRASPASOS },
 
   { to: '/presupuestos', label: 'Presupuestos', section: 'Presupuesto', roles: ACCESO.PRESUPUESTO },
   { to: '/ejecucion-presupuesto', label: 'Ejecución presupuestaria', section: 'Presupuesto', roles: ACCESO.PRESUPUESTO },

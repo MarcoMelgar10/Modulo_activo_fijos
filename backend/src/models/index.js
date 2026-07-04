@@ -21,6 +21,8 @@ import { Devolucion } from './Devolucion.js';
 import { DetalleDevolucion } from './DetalleDevolucion.js';
 import { Presupuesto } from './Presupuesto.js';
 import { LineaPresupuesto } from './LineaPresupuesto.js';
+import { Traspaso } from './Traspaso.js';
+import { DetalleTraspaso } from './DetalleTraspaso.js';
 
 // ---- Asociaciones ----
 Sucursal.hasMany(Empleado, { foreignKey: 'id_sucursal', as: 'empleados' });
@@ -109,6 +111,18 @@ LineaPresupuesto.belongsTo(CuentaContable, { foreignKey: 'id_cuenta', as: 'cuent
 Presupuesto.belongsTo(Empleado, { foreignKey: 'id_empleado_creador', as: 'creador' });
 Presupuesto.belongsTo(Empleado, { foreignKey: 'id_empleado_aprobador', as: 'aprobador' });
 
+// ---- Traspasos entre sucursales ----
+Sucursal.hasMany(Traspaso, { foreignKey: 'id_sucursal_origen', as: 'traspasosOrigen' });
+Sucursal.hasMany(Traspaso, { foreignKey: 'id_sucursal_destino', as: 'traspasosDestino' });
+Traspaso.belongsTo(Sucursal, { foreignKey: 'id_sucursal_origen', as: 'sucursalOrigen' });
+Traspaso.belongsTo(Sucursal, { foreignKey: 'id_sucursal_destino', as: 'sucursalDestino' });
+Traspaso.belongsTo(Empleado, { foreignKey: 'id_empleado', as: 'empleado' });
+Traspaso.belongsTo(Empleado, { foreignKey: 'id_empleado_recibe', as: 'empleadoRecibe' });
+Traspaso.hasMany(DetalleTraspaso, { foreignKey: 'id_traspaso', as: 'detalles', onDelete: 'CASCADE' });
+DetalleTraspaso.belongsTo(Traspaso, { foreignKey: 'id_traspaso', as: 'traspaso' });
+DetalleTraspaso.belongsTo(Lote, { foreignKey: 'id_lote', as: 'loteOrigen' });
+DetalleTraspaso.belongsTo(Lote, { foreignKey: 'id_lote_destino', as: 'loteDestino' });
+
 export {
   sequelize,
   Rol,
@@ -133,4 +147,6 @@ export {
   DetalleDevolucion,
   Presupuesto,
   LineaPresupuesto,
+  Traspaso,
+  DetalleTraspaso,
 };

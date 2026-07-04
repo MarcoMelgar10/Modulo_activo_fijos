@@ -29,6 +29,7 @@ import { Presupuestos } from '../pages/Presupuestos.jsx';
 import { EjecucionPresupuesto } from '../pages/EjecucionPresupuesto.jsx';
 import { Sucursales } from '../pages/Sucursales.jsx';
 import { Inventario } from '../pages/Inventario.jsx';
+import { Traspasos } from '../pages/Traspasos.jsx';
 
 // Guard por rol reutilizando ProtectedRoute.
 const guard = (element, roles) => <ProtectedRoute roles={roles}>{element}</ProtectedRoute>;
@@ -67,6 +68,7 @@ const router = createBrowserRouter([
       // Inventario (BODEGUERO + GERENTE)
       { path: 'productos', element: guard(<Productos />, ACCESO.INVENTARIO) },
       { path: 'inventario', element: guard(<Inventario />, ACCESO.INVENTARIO) },
+      { path: 'traspasos', element: guard(<Traspasos />, ACCESO.TRASPASOS) },
 
       // Contabilidad y Reportes Financieros (CONTADOR + GERENTE)
       { path: 'cuentas', element: guard(<Cuentas />, ACCESO.CONTABILIDAD) },

@@ -18,6 +18,7 @@ import auditoriaRoutes from './auditoria.routes.js';
 import presupuestoRoutes from './presupuesto.routes.js';
 import sucursalRoutes from './sucursal.routes.js';
 import inventarioRoutes from './inventario.routes.js';
+import traspasoRoutes from './traspaso.routes.js';
 
 const router = Router();
 
@@ -45,5 +46,6 @@ router.use('/auditoria', auditoriaRoutes);
 router.use('/presupuestos', presupuestoRoutes);
 router.use('/sucursales', sucursalRoutes);
 router.use('/inventario', inventarioRoutes);
+router.use('/traspasos', traspasoRoutes);
 
 export default router;

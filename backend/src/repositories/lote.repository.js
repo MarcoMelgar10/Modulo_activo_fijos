@@ -52,4 +52,29 @@ export const loteRepository = {
   bulkCreate(rows, t) {
     return Lote.bulkCreate(rows, { transaction: t });
   },
+
+  // Lock pesimista para traspasos (SELECT ... FOR UPDATE).
+  findByIdForUpdate(id, t) {
+    return Lote.findByPk(id, { transaction: t, lock: true });
+  },
+
+  // Copia datos de producto desde lote origen (para traspasos).
+  findByIdWithProducto(id, t) {
+    return Lote.findByPk(id, {
+      transaction: t,
+      include: [{ model: Producto, as: 'producto', attributes: ['id_producto', 'nombre', 'codigo_barras'] }],
+    });
+  },
+
+  // Actualiza cantidad y estado de un lote dentro de una transacción.
+  async actualizarCantidad(id_lote, nuevaCantidad, activo, t) {
+    const lote = await Lote.findByPk(id_lote, { transaction: t });
+    await lote.update({ cantidad_actual: nuevaCantidad, activo }, { transaction: t });
+    return lote;
+  },
+
+  // Crea un lote desde un traspaso recibido.
+  crearDesdeTraspaso(row, t) {
+    return Lote.create(row, { transaction: t });
+  },
 };
