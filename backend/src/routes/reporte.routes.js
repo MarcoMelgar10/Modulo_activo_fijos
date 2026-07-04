@@ -12,5 +12,6 @@ router.use(requireAuth, authorizeRoles('CONTADOR', 'GERENTE'));
 
 router.get('/balance-general', validateQuery(reporteQuerySchema), reporteController.getBalanceGeneral);
 router.get('/estado-resultados', validateQuery(reporteQuerySchema), reporteController.getEstadoResultados);
+router.get('/flujo-caja', validateQuery(reporteQuerySchema), reporteController.getFlujoCaja);
 
 export default router;

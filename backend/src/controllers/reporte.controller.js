@@ -37,4 +37,18 @@ export const reporteController = {
 
     res.json(resultado);
   }),
+
+  getFlujoCaja: asyncHandler(async (req, res) => {
+    const { fecha_inicio, fecha_fin } = req.query;
+    const resultado = await reporteService.generarFlujoCaja({ fecha_inicio, fecha_fin });
+
+    await auditService.log({
+      idEmpleado: req.user.id,
+      ip: ip(req),
+      accion: `CONSULTA_FLUJO_CAJA:${fecha_inicio}_${fecha_fin}`,
+      modulo: 'CONTABILIDAD',
+    });
+
+    res.json(resultado);
+  }),
 };

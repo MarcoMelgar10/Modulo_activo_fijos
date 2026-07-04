@@ -10,7 +10,7 @@ const router = Router();
 router.post(
   '/',
   requireAuth,
-  authorizeRoles('CONTADOR'),
+  authorizeRoles('CONTADOR', 'GERENTE'),
   validateBody(eventoContableSchema),
   eventoController.procesar,
 );

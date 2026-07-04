@@ -12,6 +12,7 @@ import {
   EmptyState,
 } from '../components/ui';
 import { formatBs, formatFecha } from '../lib/format.js';
+import { exportarPDF, pdfBs } from '../lib/pdf.js';
 
 export function LibroDiario() {
   const [form, setForm] = useState({
@@ -41,6 +42,25 @@ export function LibroDiario() {
   const totalHaber = data?.totalHaber ?? data?.total_haber ?? 0;
   const cuadrado = data?.cuadrado ?? false;
   const asientos = data?.asientos ?? [];
+
+  const exportarPdf = () =>
+    exportarPDF({
+      titulo: 'Libro Diario',
+      subtitulo: `Del ${filtros.fecha_inicio} al ${filtros.fecha_fin}`,
+      columnas: ['Fecha', 'Asiento', 'Cuenta', 'Detalle', 'Debe', 'Haber'],
+      filas: asientos.flatMap((a) =>
+        (a.lineas ?? []).map((l) => [
+          formatFecha(a.fecha),
+          a.numero_asiento,
+          `${l.cuenta?.codigo ?? ''} ${l.cuenta?.nombre ?? ''}`.trim(),
+          l.descripcion ?? a.concepto ?? '',
+          Number(l.debe) > 0 ? pdfBs(l.debe) : '',
+          Number(l.haber) > 0 ? pdfBs(l.haber) : '',
+        ]),
+      ),
+      resumen: [`Total Debe: ${pdfBs(totalDebe)}`, `Total Haber: ${pdfBs(totalHaber)}`, `Estado: ${cuadrado ? 'Cuadrado' : 'Descuadrado'}`],
+      archivo: `libro-diario-${filtros.fecha_inicio}_${filtros.fecha_fin}`,
+    });
 
   return (
     <div className="space-y-6">
@@ -118,9 +138,12 @@ export function LibroDiario() {
             <span className="text-xs text-ink-soft">
               {isFetching ? 'Actualizando…' : `Mostrando ${asientos.length} asientos`}
             </span>
-            <Badge tone={cuadrado ? 'success' : 'danger'}>
-              {cuadrado ? 'Cuadrado' : 'Descuadrado'}
-            </Badge>
+            <div className="flex items-center gap-3">
+              <Button size="sm" variant="secondary" onClick={exportarPdf}>Exportar PDF</Button>
+              <Badge tone={cuadrado ? 'success' : 'danger'}>
+                {cuadrado ? 'Cuadrado' : 'Descuadrado'}
+              </Badge>
+            </div>
           </div>
 
           <Card className="overflow-hidden">

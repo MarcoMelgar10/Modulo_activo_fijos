@@ -7,7 +7,7 @@ export function Topbar() {
 
   return (
     <header className="flex h-16 items-center justify-between border-b border-line bg-surface px-6">
-      <div className="text-sm text-ink-muted">Módulo de Contabilidad</div>
+      <div className="text-sm text-ink-muted">Flowy · ERP</div>
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-2">
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-sunken text-xs font-medium text-ink">

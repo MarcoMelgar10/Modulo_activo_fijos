@@ -9,4 +9,8 @@ export const reportesApi = {
     const { data } = await api.get('/reportes/estado-resultados', { params });
     return data;
   },
+  async getFlujoCaja(params = {}) {
+    const { data } = await api.get('/reportes/flujo-caja', { params });
+    return data;
+  },
 };

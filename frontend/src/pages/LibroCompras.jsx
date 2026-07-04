@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { PageHeader, Card, CardBody, Select, Spinner, EmptyState } from '../components/ui';
 import { useLibroCompras } from '../queries/useLibrosFiscal.js';
 import { formatBs, formatFecha } from '../lib/format.js';
+import { exportarPDF, pdfBs } from '../lib/pdf.js';
 
 const MESES = [
   { value: 1, label: 'Enero' }, { value: 2, label: 'Febrero' },
@@ -33,6 +34,20 @@ export function LibroCompras() {
 
   const { data, isLoading } = useLibroCompras({ mes, gestion });
 
+  const exportarPdf = () =>
+    exportarPDF({
+      titulo: 'Libro de Compras',
+      subtitulo: `${MESES.find((m) => m.value === mes)?.label} ${gestion}`,
+      columnas: ['Fecha', 'Nro. Asiento', 'Concepto', 'Neto', 'IVA Crédito', 'Total'],
+      filas: data.registros.map((r) => [formatFecha(r.fecha), r.numero_asiento, r.concepto, pdfBs(r.monto_neto), pdfBs(r.iva), pdfBs(r.monto_total)]),
+      resumen: [
+        `Total Neto: ${pdfBs(data.totales.total_neto)}`,
+        `Total IVA Crédito: ${pdfBs(data.totales.total_iva)}`,
+        `Total General: ${pdfBs(data.totales.total_general)}`,
+      ],
+      archivo: `libro-compras-${gestion}-${String(mes).padStart(2, '0')}`,
+    });
+
   return (
     <div>
       <PageHeader title="Libro de Compras" description="Registro de compras con IVA Crédito Fiscal desglosado." />
@@ -45,9 +60,10 @@ export function LibroCompras() {
           ))}
         </Select>
         {data?.registros?.length > 0 && (
-          <button onClick={() => exportCSV(data.registros)} className="ml-auto text-sm text-blue-600 hover:underline">
-            Exportar CSV
-          </button>
+          <div className="ml-auto flex items-center gap-4">
+            <button onClick={() => exportCSV(data.registros)} className="text-sm text-blue-600 hover:underline">Exportar CSV</button>
+            <button onClick={exportarPdf} className="text-sm text-blue-600 hover:underline">Exportar PDF</button>
+          </div>
         )}
       </div>
 

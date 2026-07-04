@@ -12,6 +12,7 @@ import {
   EmptyState,
 } from '../components/ui';
 import { formatBs, formatFecha } from '../lib/format.js';
+import { exportarPDF, pdfBs } from '../lib/pdf.js';
 
 export function LibroMayor() {
   const { data: cuentasPlanas = [] } = useCuentasPlanas();
@@ -77,6 +78,23 @@ export function LibroMayor() {
       saldoAcumulado: tempSaldo,
     };
   });
+
+  const exportarPdf = () =>
+    exportarPDF({
+      titulo: 'Libro Mayor',
+      subtitulo: `${selectedAccount ? `${selectedAccount.codigo} · ${selectedAccount.nombre}` : ''} — del ${filtros.fecha_inicio} al ${filtros.fecha_fin}`,
+      columnas: ['Fecha', 'Asiento', 'Concepto', 'Debe', 'Haber', 'Saldo'],
+      filas: movimientosConSaldo.map((m) => [
+        formatFecha(m.fecha),
+        m.numero_asiento || m.asiento_numero || '',
+        m.concepto || m.descripcion || '',
+        Number(m.debe) > 0 ? pdfBs(m.debe) : '',
+        Number(m.haber) > 0 ? pdfBs(m.haber) : '',
+        pdfBs(m.saldoAcumulado),
+      ]),
+      resumen: [`Saldo inicial: ${pdfBs(saldoInicial)}`, `Saldo final: ${pdfBs(saldoFinal)}`],
+      archivo: `libro-mayor-${filtros.fecha_inicio}_${filtros.fecha_fin}`,
+    });
 
   return (
     <div className="space-y-6">
@@ -222,6 +240,7 @@ export function LibroMayor() {
             <span className="text-xs text-ink-soft">
               {isFetching ? 'Actualizando…' : `Mostrando ${movimientos.length} transacciones`}
             </span>
+            <Button size="sm" variant="secondary" onClick={exportarPdf}>Exportar PDF</Button>
           </div>
 
           {/* Tabla de Movimientos */}

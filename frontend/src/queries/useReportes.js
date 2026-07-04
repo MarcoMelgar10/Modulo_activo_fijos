@@ -16,3 +16,11 @@ export function useEstadoResultados(filtros = {}, options = {}) {
     ...options,
   });
 }
+
+export function useFlujoCaja(filtros = {}, options = {}) {
+  return useQuery({
+    queryKey: ['reportes', 'flujo-caja', filtros],
+    queryFn: () => reportesApi.getFlujoCaja(filtros),
+    ...options,
+  });
+}

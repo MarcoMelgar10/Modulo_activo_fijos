@@ -1,239 +1,111 @@
 import { useState } from 'react';
 import { useBalanceGeneral } from '../queries/useReportes.js';
-import {
-  PageHeader,
-  Card,
-  CardBody,
-  Button,
-  Input,
-  Select,
-  Spinner,
-  EmptyState,
-  Badge,
-} from '../components/ui';
+import { PageHeader, Card, CardBody, Button, Input, Spinner, EmptyState, Badge } from '../components/ui';
 import { formatBs } from '../lib/format.js';
+import { exportarPDF, pdfBs } from '../lib/pdf.js';
 
-function FilaBalance({ cuenta }) {
-  const paddingMap = {
-    1: 'pl-0 font-bold text-ink text-sm',
-    2: 'pl-4 font-semibold text-ink-muted text-sm',
-    3: 'pl-8 text-ink-muted text-sm',
-    4: 'pl-12 text-ink-soft text-xs',
-    5: 'pl-16 text-ink-soft text-xs',
-  };
+const sangria = { 1: 'font-bold text-ink', 2: 'pl-4 font-semibold text-ink-muted', 3: 'pl-8 text-ink-muted', 4: 'pl-12 text-ink-soft' };
 
-  const cssClase = paddingMap[cuenta.nivel] || 'pl-0 text-sm';
-  const saldoVal = Number(cuenta.saldo ?? cuenta.monto ?? cuenta.total ?? 0);
-
+function GrupoCuentas({ titulo, cuentas, total }) {
   return (
-    <>
-      <div className="flex items-center justify-between py-2.5 border-b border-line/40 hover:bg-surface-muted/50">
-        <div className={`flex items-center gap-3 ${cssClase}`}>
-          <span className="font-mono text-xs text-ink-soft">{cuenta.codigo}</span>
-          <span>{cuenta.nombre}</span>
-        </div>
-        <span className="font-medium tabular-nums text-ink text-sm">
-          {formatBs(saldoVal)}
-        </span>
+    <Card>
+      <div className="flex items-center justify-between border-b border-line bg-surface-sunken px-5 py-4">
+        <h3 className="text-xs font-bold uppercase tracking-wide text-ink">{titulo}</h3>
+        <span className="text-sm font-bold text-ink">{formatBs(total)}</span>
       </div>
-      {cuenta.subcuentas?.map((sub, idx) => (
-        <FilaBalance key={sub.id_cuenta || sub.codigo || idx} cuenta={sub} />
-      ))}
-      {cuenta.hijos?.map((sub, idx) => (
-        <FilaBalance key={sub.id_cuenta || sub.codigo || idx} cuenta={sub} />
-      ))}
-    </>
+      <CardBody className="py-2">
+        {cuentas.length === 0 ? (
+          <p className="py-3 text-center text-xs text-ink-soft">Sin movimientos</p>
+        ) : (
+          cuentas.map((c) => (
+            <div key={c.id_cuenta || c.codigo} className="flex items-center justify-between border-b border-line/40 py-2 text-sm last:border-0">
+              <div className={`flex items-center gap-3 ${sangria[c.nivel] || ''}`}>
+                <span className="font-mono text-xs text-ink-soft">{c.codigo}</span>
+                <span>{c.nombre}</span>
+              </div>
+              <span className="tabular-nums">{formatBs(c.saldo)}</span>
+            </div>
+          ))
+        )}
+      </CardBody>
+    </Card>
   );
 }
 
 export function BalanceGeneral() {
-  const [form, setForm] = useState({
-    fecha_inicio: '',
-    fecha_fin: '',
-    id_sucursal: '',
-  });
-
+  const [form, setForm] = useState({ fecha_inicio: '', fecha_fin: '' });
   const [filtros, setFiltros] = useState(null);
+  const { data, isLoading, isError } = useBalanceGeneral(filtros || {}, { enabled: filtros !== null });
 
-  const { data, isLoading, isError, isFetching } = useBalanceGeneral(filtros || {}, {
-    enabled: filtros !== null,
-  });
-
-  const handleSubmit = (e) => {
+  const submit = (e) => {
     e.preventDefault();
     if (!form.fecha_inicio || !form.fecha_fin) return;
-    setFiltros({
-      fecha_inicio: form.fecha_inicio,
-      fecha_fin: form.fecha_fin,
-      id_sucursal: form.id_sucursal ? Number(form.id_sucursal) : undefined,
-    });
+    setFiltros({ fecha_inicio: form.fecha_inicio, fecha_fin: form.fecha_fin });
   };
 
-  // Extraer datos soportando diferentes estructuras de respuesta
-  const activo = data?.activo ?? {};
-  const pasivo = data?.pasivo ?? {};
-  const patrimonio = data?.patrimonio ?? {};
+  const cuentas = data?.cuentas ?? [];
+  const v = data?.validacion ?? {};
+  const activo = cuentas.filter((c) => c.tipo === 'ACTIVO');
+  const pasivo = cuentas.filter((c) => c.tipo === 'PASIVO');
+  const patrimonio = cuentas.filter((c) => c.tipo === 'PATRIMONIO');
+  const tiene = cuentas.length > 0;
 
-  const totalActivo = Number(activo.total ?? data?.total_activo ?? data?.totalActivo ?? 0);
-  const totalPasivo = Number(pasivo.total ?? data?.total_pasivo ?? data?.totalPasivo ?? 0);
-  const totalPatrimonio = Number(patrimonio.total ?? data?.total_patrimonio ?? data?.totalPatrimonio ?? 0);
-
-  const totalPasivoMasPatrimonio = totalPasivo + totalPatrimonio;
-  
-  // Ecuación contable: Activo = Pasivo + Patrimonio
-  // Usamos diferencia pequeña de centavos para tolerancia
-  const descuadreVal = Math.abs(totalActivo - totalPasivoMasPatrimonio);
-  const cuadraEcuacion = descuadreVal < 0.05;
-
-  const activoCuentas = activo.cuentas ?? activo.subcuentas ?? activo.hijos ?? [];
-  const pasivoCuentas = pasivo.cuentas ?? pasivo.subcuentas ?? pasivo.hijos ?? [];
-  const patrimonioCuentas = patrimonio.cuentas ?? patrimonio.subcuentas ?? patrimonio.hijos ?? [];
-
-  const tieneCuentas =
-    activoCuentas.length > 0 || pasivoCuentas.length > 0 || patrimonioCuentas.length > 0;
+  const exportar = () =>
+    exportarPDF({
+      titulo: 'Balance General',
+      subtitulo: `Del ${data.fecha_inicio} al ${data.fecha_fin}`,
+      columnas: ['Código', 'Cuenta', 'Tipo', 'Saldo'],
+      filas: cuentas.map((c) => [c.codigo, c.nombre, c.tipo, pdfBs(c.saldo)]),
+      resumen: [
+        `Total Activo: ${pdfBs(v.total_activo)}`,
+        `Total Pasivo: ${pdfBs(v.total_pasivo)}`,
+        `Total Patrimonio (incl. resultado del ejercicio): ${pdfBs((v.total_patrimonio || 0) + (v.resultado_ejercicio || 0))}`,
+        `Ecuación contable: ${v.ecuacion_cumplida ? 'Cuadrada' : 'Descuadrada'}`,
+      ],
+      archivo: `balance-general-${data.fecha_fin}`,
+    });
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="Balance General"
-        description="Estado de situación financiera que muestra los activos, pasivos y patrimonio de la empresa."
-      />
+      <PageHeader title="Balance General" description="Situación financiera: activos, pasivos y patrimonio a una fecha de corte." />
 
       <Card>
         <CardBody>
-          <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-4 sm:grid-cols-4 sm:items-end">
-            <Input
-              id="fecha_inicio"
-              label="Fecha Inicio *"
-              type="date"
-              required
-              value={form.fecha_inicio}
-              onChange={(e) => setForm({ ...form, fecha_inicio: e.target.value })}
-            />
-            <Input
-              id="fecha_fin"
-              label="Fecha Fin *"
-              type="date"
-              required
-              value={form.fecha_fin}
-              onChange={(e) => setForm({ ...form, fecha_fin: e.target.value })}
-            />
-            <Select
-              id="sucursal"
-              label="Sucursal (opcional)"
-              value={form.id_sucursal}
-              onChange={(e) => setForm({ ...form, id_sucursal: e.target.value })}
-            >
-              <option value="">— Todas —</option>
-              {[1, 2, 3, 4, 5, 6, 7, 8].map((num) => (
-                <option key={num} value={num}>
-                  Sucursal {num}
-                </option>
-              ))}
-            </Select>
-            <Button type="submit" disabled={!form.fecha_inicio || !form.fecha_fin}>
-              Generar Balance
-            </Button>
+          <form onSubmit={submit} className="grid grid-cols-1 gap-4 sm:grid-cols-4 sm:items-end">
+            <Input id="fi" label="Fecha inicio" type="date" required value={form.fecha_inicio} onChange={(e) => setForm({ ...form, fecha_inicio: e.target.value })} />
+            <Input id="ff" label="Fecha fin" type="date" required value={form.fecha_fin} onChange={(e) => setForm({ ...form, fecha_fin: e.target.value })} />
+            <Button type="submit" disabled={!form.fecha_inicio || !form.fecha_fin}>Generar</Button>
+            {tiene && <Button type="button" variant="secondary" onClick={exportar}>Exportar PDF</Button>}
           </form>
         </CardBody>
       </Card>
 
-      {filtros === null && (
-        <EmptyState
-          title="Filtros requeridos"
-          description="Selecciona un rango de fechas para generar el Balance General."
-        />
-      )}
+      {filtros === null && <EmptyState title="Filtros requeridos" description="Selecciona un rango de fechas." />}
+      {filtros !== null && isLoading && <div className="flex items-center gap-2 text-sm text-ink-muted"><Spinner /> Calculando…</div>}
+      {filtros !== null && isError && <p className="text-sm text-red-600">No se pudo generar el balance.</p>}
+      {filtros !== null && !isLoading && !isError && !tiene && <EmptyState title="Sin datos" description="No hay movimientos en el período." />}
 
-      {filtros !== null && isLoading && (
-        <div className="flex items-center gap-2 text-sm text-ink-muted">
-          <Spinner /> Calculando Balance General…
-        </div>
-      )}
-
-      {filtros !== null && isError && (
-        <p className="text-sm text-red-600">No se pudo generar el reporte de Balance General.</p>
-      )}
-
-      {filtros !== null && !isLoading && !isError && !tieneCuentas && (
-        <EmptyState
-          title="Sin datos"
-          description="No se registraron movimientos contables en el período seleccionado para armar el balance."
-        />
-      )}
-
-      {filtros !== null && !isLoading && !isError && tieneCuentas && (
+      {tiene && (
         <div className="space-y-6">
-          <div className="flex justify-end items-center">
-            <span className="text-xs text-ink-soft">
-              {isFetching ? 'Actualizando…' : 'Reporte generado en tiempo real'}
-            </span>
-          </div>
-
           <div className="grid gap-6 lg:grid-cols-2">
-            {/* Columna Izquierda: Activos */}
-            <div className="space-y-4">
-              <Card>
-                <div className="bg-surface-sunken border-b border-line px-5 py-4 flex justify-between items-center">
-                  <h3 className="font-bold text-ink uppercase tracking-wide text-xs">1. Activo</h3>
-                  <span className="font-bold text-ink text-sm">{formatBs(totalActivo)}</span>
-                </div>
-                <CardBody className="divide-y divide-line/30 py-2">
-                  {activoCuentas.map((c, idx) => (
-                    <FilaBalance key={c.id_cuenta || c.codigo || idx} cuenta={c} />
-                  ))}
-                </CardBody>
-              </Card>
-            </div>
-
-            {/* Columna Derecha: Pasivos y Patrimonio */}
+            <GrupoCuentas titulo="Activo" cuentas={activo} total={v.total_activo} />
             <div className="space-y-6">
-              {/* Pasivos */}
-              <Card>
-                <div className="bg-surface-sunken border-b border-line px-5 py-4 flex justify-between items-center">
-                  <h3 className="font-bold text-ink uppercase tracking-wide text-xs">2. Pasivo</h3>
-                  <span className="font-bold text-ink text-sm">{formatBs(totalPasivo)}</span>
-                </div>
-                <CardBody className="divide-y divide-line/30 py-2">
-                  {pasivoCuentas.map((c, idx) => (
-                    <FilaBalance key={c.id_cuenta || c.codigo || idx} cuenta={c} />
-                  ))}
-                </CardBody>
-              </Card>
-
-              {/* Patrimonio */}
-              <Card>
-                <div className="bg-surface-sunken border-b border-line px-5 py-4 flex justify-between items-center">
-                  <h3 className="font-bold text-ink uppercase tracking-wide text-xs">3. Patrimonio</h3>
-                  <span className="font-bold text-ink text-sm">{formatBs(totalPatrimonio)}</span>
-                </div>
-                <CardBody className="divide-y divide-line/30 py-2">
-                  {patrimonioCuentas.map((c, idx) => (
-                    <FilaBalance key={c.id_cuenta || c.codigo || idx} cuenta={c} />
-                  ))}
-                </CardBody>
-              </Card>
+              <GrupoCuentas titulo="Pasivo" cuentas={pasivo} total={v.total_pasivo} />
+              <GrupoCuentas titulo="Patrimonio" cuentas={patrimonio} total={(v.total_patrimonio || 0) + (v.resultado_ejercicio || 0)} />
             </div>
           </div>
 
-          {/* Banner de Control Financiero / Ecuación Contable */}
-          <Card className={cuadraEcuacion ? 'border-emerald-200 bg-emerald-50/30' : 'border-red-200 bg-red-50/30'}>
-            <CardBody className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 py-4">
+          <Card className={v.ecuacion_cumplida ? 'border-emerald-200 bg-emerald-50/30' : 'border-red-200 bg-red-50/30'}>
+            <CardBody className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <h4 className="text-sm font-semibold text-ink">Ecuación de Control Financiero</h4>
-                <p className="text-xs text-ink-muted mt-0.5">
-                  Activo = Pasivo + Patrimonio (Partida Doble Institucional)
-                </p>
+                <h4 className="text-sm font-semibold text-ink">Ecuación contable</h4>
+                <p className="mt-0.5 text-xs text-ink-muted">Activo = Pasivo + Patrimonio</p>
               </div>
-              <div className="flex flex-col sm:items-end gap-1.5">
-                <div className="flex items-center gap-3">
-                  <span className="text-xs font-mono text-ink-muted">
-                    {formatBs(totalActivo)} = {formatBs(totalPasivo)} + {formatBs(totalPatrimonio)}
-                  </span>
-                  <Badge tone={cuadraEcuacion ? 'success' : 'danger'}>
-                    {cuadraEcuacion ? 'Cuadrado' : `Descuadrado: ${formatBs(descuadreVal)}`}
-                  </Badge>
-                </div>
+              <div className="flex items-center gap-3">
+                <span className="font-mono text-xs text-ink-muted">
+                  {formatBs(v.total_activo)} = {formatBs(v.pasivo_mas_patrimonio)}
+                </span>
+                <Badge tone={v.ecuacion_cumplida ? 'success' : 'danger'}>{v.ecuacion_cumplida ? 'Cuadrado' : 'Descuadrado'}</Badge>
               </div>
             </CardBody>
           </Card>

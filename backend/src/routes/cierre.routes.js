@@ -12,7 +12,7 @@ router.use(requireAuth, authorizeRoles('CONTADOR', 'GERENTE'));
 router.get('/', cierreController.listar);
 router.get('/:id', cierreController.obtener);
 
-// Cerrar gestión: solo CONTADOR.
-router.post('/', authorizeRoles('CONTADOR'), validateBody(cerrarGestionSchema), cierreController.cerrar);
+// Cerrar gestión: CONTADOR (y GERENTE, que puede todo).
+router.post('/', authorizeRoles('CONTADOR', 'GERENTE'), validateBody(cerrarGestionSchema), cierreController.cerrar);
 
 export default router;

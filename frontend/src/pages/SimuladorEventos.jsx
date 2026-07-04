@@ -12,10 +12,12 @@ import {
 } from '../components/ui';
 import { formatBs } from '../lib/format.js';
 
-// Lista de eventos predefinidos para simulación
+// Lista de eventos predefinidos para simulación.
+// `tipoBackend` es el valor que espera la API (/api/eventos-contables): VENTA | COMPRA | DEVOLUCION | PAGO.
 const EVENTOS_ERP = [
   {
     tipo: 'VENTA_POS',
+    tipoBackend: 'VENTA',
     titulo: 'Ventas POS',
     descripcion: 'Simula el registro de ventas diarias de la tienda. Afecta cuentas de Caja/Banco e Ingresos.',
     color: 'bg-emerald-50 text-emerald-700 border-emerald-100',
@@ -27,6 +29,7 @@ const EVENTOS_ERP = [
   },
   {
     tipo: 'COMPRA_ALMACEN',
+    tipoBackend: 'COMPRA',
     titulo: 'Compras de Almacén',
     descripcion: 'Simula la adquisición de inventario o suministros de oficina. Afecta cuentas de Inventario e Impuestos.',
     color: 'bg-indigo-50 text-indigo-700 border-indigo-100',
@@ -38,6 +41,7 @@ const EVENTOS_ERP = [
   },
   {
     tipo: 'DEVOLUCION_CLIENTE',
+    tipoBackend: 'DEVOLUCION',
     titulo: 'Devolución de Cliente',
     descripcion: 'Simula la devolución de productos vendidos. Afecta cuentas de Devoluciones e Inventario.',
     color: 'bg-amber-50 text-amber-700 border-amber-100',
@@ -49,6 +53,7 @@ const EVENTOS_ERP = [
   },
   {
     tipo: 'PAGO_PROVEEDOR',
+    tipoBackend: 'PAGO',
     titulo: 'Pago a Proveedores',
     descripcion: 'Simula el egreso de efectivo para cancelar saldos comerciales pendientes. Afecta cuentas por Pagar y Caja.',
     color: 'bg-red-50 text-red-700 border-red-100',
@@ -94,15 +99,20 @@ export function SimuladorEventos() {
     setError(null);
     setExitoAsiento(null);
 
+    // Contrato real de la API /api/eventos-contables (validado con Zod en el backend):
+    // { tipo, fecha (AAAA-MM-DD), referencia_id (entero>0), monto_total (>0), sucursal_id, glosa? }.
     const payload = {
-      tipo_evento: selectedEvento.tipo,
-      monto_bruto: Number(montoBruto),
+      tipo: selectedEvento.tipoBackend,
+      fecha: new Date().toISOString().slice(0, 10),
+      referencia_id: Math.floor(Math.random() * 1_000_000) + 1,
+      monto_total: Number(montoBruto),
       sucursal_id: Number(sucursalId),
+      glosa: `Simulación ERP — ${selectedEvento.titulo}`,
     };
 
     try {
       const res = await simular.mutateAsync(payload);
-      // El backend retorna el asiento contable autogenerado
+      // El backend retorna el asiento contable autogenerado en { asiento }.
       const asientoGenerado = res?.asiento ?? res?.asientoGenerado ?? {};
       setExitoAsiento(asientoGenerado);
     } catch (err) {

@@ -344,3 +344,197 @@ Backend: `model` → `migration` → `repository` → `service` → `validator` 
 - Tras **cerrar una gestión** (Etapa 7) no se pueden crear/editar asientos de ese año
   (bloqueo de período). Tenerlo en cuenta al hacer demos o pruebas con datos de un año cerrado.
 - **No volver a versionar `backend/.env`**: usar `backend/.env.template` y crear el `.env` local.
+
+---
+
+## Actualización 2026-07-03 — Módulo Compras y Proveedores (RF-COM)
+
+Se implementó el **módulo de Compras** del ERP de forma **real** (no simulada) y con integración
+contable, además de la **base mínima de inventario** que las compras necesitan. También se
+**corrigió el bug del Simulador ERP** (payload desalineado con la API → 400).
+
+### Qué se construyó
+- **Proveedores (RF-COM-01):** CRUD completo, NIT único, baja lógica.
+- **Productos/Categorías/Lotes (RF-INV-01 parcial):** CRUD de productos y categorías; los lotes
+  se crean automáticamente en la recepción de mercancía.
+- **Órdenes de compra (RF-COM-02/03):** ciclo BORRADOR → ENVIADA → RECIBIDA → (CANCELADA).
+  La **recepción** crea lotes + genera el asiento contable (contado contra Caja, o crédito contra
+  Cuentas por Pagar) + registra la cuenta por pagar si aplica.
+- **Cuentas por pagar (RF-COM-04):** pagos parciales/totales; **cada pago genera su asiento**
+  (Cuentas por Pagar / Caja), por lo que aparece en Diario, Mayor y Balance.
+
+### Modelo de datos (tablas nuevas)
+`proveedor`, `categoria`, `producto`, `lote`, `orden_compra`, `detalle_orden_compra`,
+`cuenta_por_pagar`, `pago_proveedor`.
+
+### Endpoints nuevos
+`/api/proveedores`, `/api/productos` (+ `/categorias`), `/api/ordenes-compra`
+(`/enviar`, `/recibir`, `/cancelar`), `/api/cuentas-por-pagar` (+ `/:id/pagos`).
+Detalle completo en `backend/README.md`. Los operan **GERENTE y CONTADOR**.
+
+### Frontend
+Nuevas secciones de sidebar **Compras** e **Inventario** con las páginas Proveedores, Productos,
+Órdenes de compra y Cuentas por pagar (design system reutilizado).
+
+### Cómo ponerlo en marcha
+```bash
+cd backend && npm run db:migrate && npm run db:seed && npm test
+cd ../frontend && npm run lint && npm test && npm run build
+```
+
+### Pendiente del informe (para quien siga)
+El documento oficial aún tiene sin construir: **Ventas/POS (RF-VEN)**, **inventario completo**
+(FEFO, alertas RF-INV-03, biométrico RF-INV-04, traspasos RF-INV-05), **gestión de usuarios**
+(RF-USR-00/02/04/05), **Flujo de Caja** y **exportación PDF/Excel** (RF-CON-03/RF-REP-02).
+
+---
+
+## Actualización 2026-07-03 (2) — Módulo Ventas y POS (RF-VEN)
+
+Se implementó el **Punto de Venta** con integración contable completa.
+
+### Qué se construyó
+- **RF-VEN-01 Registro de ventas:** POS con carrito, método de pago y descuento; numeración
+  `VTA-AAAA-#####`; asiento automático (Caja/Bancos · Ventas · IVA).
+- **RF-VEN-02 Descuento de inventario (FEFO):** cada venta descuenta stock de los lotes con
+  vencimiento más próximo primero (puede tomar de varios lotes).
+- **RF-VEN-03 Devoluciones:** repone stock y genera el asiento de reversa; la venta pasa a
+  DEVOLUCION_PARCIAL.
+- **RF-VEN-04 Reporte de ventas:** totales + comparativa por sucursal con filtros
+  (`GET /api/ventas/reporte`).
+
+### Tablas nuevas
+`venta`, `detalle_venta`, `devolucion`, `detalle_devolucion`.
+
+### Endpoints
+`/api/ventas` (listar/crear/detalle), `/api/ventas/reporte`, `/api/ventas/devoluciones`.
+Los operan CONTADOR/GERENTE (CAJERO habilitado en backend para el futuro login de cajeros).
+
+### Frontend
+Nueva sección de sidebar **Ventas**: Punto de venta, Historial de ventas (con devolución) y
+Reporte de ventas.
+
+### Decisiones del cliente
+- POS operado por Contador/Gerente (registra al usuario como cajero).
+- Sin asiento de costo de ventas (solo baja el stock físico, no el inventario contable).
+- Efectivo→Caja; tarjeta/QR→Bancos.
+
+### Pendiente del informe (actualizado)
+**Gestión de usuarios** (RF-USR-00/02/04/05), **inventario completo** (alertas RF-INV-03,
+biométrico RF-INV-04, traspasos RF-INV-05), **Flujo de Caja** (RF-CON-03) y **exportación
+PDF/Excel con logo** (RF-REP-02).
+
+---
+
+## Actualización 2026-07-03 (3) — Gestión de usuarios y RBAC por rol (RF-USR)
+
+El **GERENTE** (administrador) crea usuarios y les asigna un rol; el rol define a qué módulos
+accede cada uno. Los roles siguen viniendo del **seeder**.
+
+### Acceso por rol (mapeo por especialidad)
+- **GERENTE** → todo + gestión de usuarios.
+- **CONTADOR** → Contabilidad y Reportes Financieros.
+- **CAJERO** → Ventas/POS (+ lectura del catálogo para vender).
+- **BODEGUERO** → Inventario y Compras.
+
+El control se aplica en **dos capas**: backend (`authorizeRoles` en cada ruta) y frontend
+(`lib/access.js` + `navItems.roles`, `Sidebar` filtra, `AppRouter` protege cada ruta y `RoleHome`
+lleva a cada rol a su módulo). Solo el GERENTE ve la sección **Administración → Usuarios**.
+
+### Backend
+- Módulo `usuarios`: repository/service/validators/controller/routes (solo GERENTE). Alta con
+  hash bcrypt, edición, alta/baja lógica, listado de roles. Endpoints en `/api/usuarios`.
+- Ajuste de RBAC en las rutas de Ventas (CAJERO), Compras/Inventario (BODEGUERO) y Contabilidad
+  (CONTADOR). Productos legible por CAJERO (para el POS).
+
+### Usuarios demo (seeder)
+`gerente`/`Gerente123`, `contador`/`Contador123`, `cajero`/`Cajero123`, `bodeguero`/`Bodeguero123`.
+
+### Fuera de alcance (confirmado con el cliente)
+- **Multi-sucursal (RF-USR-05):** stand-by; usuarios nuevos usan la sucursal 1.
+- **Registro de sesiones (RF-USR-03):** sin cambios.
+- **Auto-registro público (RF-USR-00):** no se implementa; el alta la hace el GERENTE.
+
+### Pendiente del informe (actualizado)
+**Inventario avanzado** (alertas RF-INV-03, biométrico RF-INV-04, traspasos RF-INV-05),
+**Flujo de Caja** (RF-CON-03), **exportación PDF/Excel con logo** (RF-REP-02), **multi-sucursal**
+y **auto-registro** (si se decidiera incluirlo).
+
+---
+
+## Actualización 2026-07-03 (4) — Export PDF, Auditoría y Flujo de Caja
+
+### Export a PDF (RF-REP-02, parte PDF)
+- `frontend/src/lib/pdf.js` (jsPDF + jspdf-autotable, import dinámico). Botón **Exportar PDF** en
+  Balance General, Estado de Resultados, Libro Diario/Mayor, Libro de Compras/Ventas, Reporte de
+  Ventas y Flujo de Caja. **Requiere `cd frontend && npm install`** (se añadieron `jspdf` y
+  `jspdf-autotable`).
+- De paso se corrigió un bug: Balance General y Estado de Resultados leían claves inexistentes en la
+  respuesta (`data.activo/…`); ahora consumen `data.cuentas` (planas por tipo) y muestran datos.
+
+### Auditoría de acciones (RF-REP-03)
+- Backend `/api/auditoria` (solo GERENTE) que lee el log inmutable con filtros por fecha/módulo/usuario.
+- Frontend: página **Auditoría** en la sección Administración (solo GERENTE), con export PDF.
+
+### Flujo de Caja (RF-CON-03)
+- Backend `/api/reportes/flujo-caja`: método directo sobre Caja (1.1.1) y Bancos (1.1.2), con saldo
+  inicial, entradas/salidas por origen y saldo final.
+- Frontend: página **Flujo de Caja** en Reportes Financieros, con export PDF.
+
+### Pendiente del informe (actualizado)
+**Inventario avanzado** (RF-INV-03/04/05), **exportación a Excel** (el PDF ya está; falta Excel y el
+logo como imagen), **multi-sucursal** (RF-USR-05, en stand-by) y **auto-registro** (RF-USR-00, si se
+decidiera incluirlo).
+
+---
+
+## Actualización 2026-07-03 (5) — Módulo Presupuesto (RF-PRE)
+
+Presupuesto **anual por gestión** de Ingresos y Gastos, apoyado en la contabilidad.
+
+### Flujo
+- **Definición (RF-PRE-01):** el CONTADOR crea un presupuesto (BORRADOR) con líneas por cuenta hoja
+  de INGRESO/GASTO y su monto planificado.
+- **Aprobación (RF-PRE-02):** el GERENTE aprueba o rechaza (no se aprueban dos para la misma gestión).
+- **Ejecución (RF-PRE-03/04/05):** compara planificado vs real (movimientos contables de la gestión),
+  con desviación, % de ejecución y alertas (sobregiro en gastos, bajo meta en ingresos).
+
+### Backend
+- Modelos `Presupuesto`/`LineaPresupuesto`; `/api/presupuestos` (CONTADOR/GERENTE; aprobar/rechazar
+  solo GERENTE); la ejecución reutiliza `reporteRepository.getTotalesPorCuenta`. Test del service.
+
+### Frontend
+- Sección **Presupuesto** (CONTADOR/GERENTE): páginas Presupuestos (definición + aprobación) y
+  Ejecución presupuestaria (plan vs real con export PDF).
+
+### Tablas nuevas
+`presupuesto`, `linea_presupuesto`.
+
+### Nota de alcance
+RF-PRE no está en `Ingenieria de software.md`; se construyó según los documentos internos y prácticas
+estándar, con las decisiones confirmadas por el cliente (Ingresos+Gastos, anual, contador define /
+gerente aprueba).
+
+### Pendiente del informe (actualizado)
+Solo restan del informe: **inventario avanzado** (RF-INV-03/04/05), **export a Excel** (el PDF ya
+está), **dashboard gerencial ampliado** (RF-REP-01) y, fuera del alcance activo por decisión del
+cliente, **multi-sucursal** (RF-USR-05) y **auto-registro** (RF-USR-00).
+
+---
+
+## Actualización 2026-07-03 (6) — Dashboard gerencial (RF-REP-01)
+
+Panel de KPIs en tiempo real para el GERENTE.
+
+- **Backend:** `GET /api/dashboard/gerencial` (solo GERENTE) — `dashboard-gerencial.service.js`
+  compone ventas/compras/CxP/inventario + resumen financiero del mes. Devuelve ventas de hoy,
+  órdenes pendientes, cuentas por pagar abiertas, utilidad e IVA del mes, y **stock bajo el mínimo +
+  lotes por vencer** (solo lectura).
+- **Frontend:** `Dashboard.jsx` es consciente del rol: GERENTE → dashboard gerencial; CONTADOR →
+  panel fiscal previo.
+- El recuadro de stock es solo lectura (no es el sistema de alertas automáticas RF-INV-03).
+
+### Pendiente del informe (actualizado)
+Del informe solo restan: **inventario avanzado** (RF-INV-03/04/05) y **export a Excel** (el PDF ya
+está); fuera del alcance activo por decisión del cliente: **multi-sucursal** (RF-USR-05) y
+**auto-registro** (RF-USR-00).

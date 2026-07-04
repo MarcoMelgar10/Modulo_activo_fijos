@@ -14,9 +14,9 @@ router.get('/', cuentaController.listar);
 router.get('/arbol', cuentaController.arbol);
 router.get('/:id', cuentaController.obtener);
 
-// Crear/editar/eliminar: solo CONTADOR.
-router.post('/', authorizeRoles('CONTADOR'), validateBody(crearCuentaSchema), cuentaController.crear);
-router.put('/:id', authorizeRoles('CONTADOR'), validateBody(actualizarCuentaSchema), cuentaController.actualizar);
-router.delete('/:id', authorizeRoles('CONTADOR'), cuentaController.eliminar);
+// Crear/editar/eliminar: CONTADOR (y GERENTE, que puede todo).
+router.post('/', authorizeRoles('CONTADOR', 'GERENTE'), validateBody(crearCuentaSchema), cuentaController.crear);
+router.put('/:id', authorizeRoles('CONTADOR', 'GERENTE'), validateBody(actualizarCuentaSchema), cuentaController.actualizar);
+router.delete('/:id', authorizeRoles('CONTADOR', 'GERENTE'), cuentaController.eliminar);
 
 export default router;

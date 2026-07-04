@@ -40,7 +40,9 @@ Health check del backend: `GET http://localhost:4000/health`
 
 ## Estado del proyecto
 
-Ver [PROGRESO.md](PROGRESO.md) para el avance por etapas.
+Contabilidad completa (Etapas 0–9) y **módulo de Compras y Proveedores** (RF-COM-01..04:
+proveedores, productos, órdenes de compra con recepción, y cuentas por pagar con pagos
+reflejados en la contabilidad). Ver [PROGRESO.md](PROGRESO.md) para el avance por etapas.
 
 ## Continuar el desarrollo
 

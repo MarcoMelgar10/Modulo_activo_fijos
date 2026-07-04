@@ -183,6 +183,53 @@ export function createReporteService({ reporteRepo = reporteRepository, cuentaRe
         },
       };
     },
+
+    /**
+     * Flujo de Caja del período (método directo, RF-CON-03). Toma los movimientos
+     * de las cuentas de efectivo (Caja 1.1.1 y Bancos 1.1.2):
+     *   saldo_final = saldo_inicial + entradas − salidas.
+     * Las entradas/salidas se desglosan por tipo de origen (venta, compra, pago…).
+     */
+    async generarFlujoCaja({ fecha_inicio, fecha_fin }) {
+      // Día anterior al inicio del período (para el saldo de apertura).
+      // Se usa UTC para que no dependa de la zona horaria del servidor.
+      const d = new Date(`${fecha_inicio}T00:00:00Z`);
+      d.setUTCDate(d.getUTCDate() - 1);
+      const inicioMenos1 = d.toISOString().slice(0, 10);
+
+      const [saldoIni, movimientos] = await Promise.all([
+        reporteRepo.getSaldoCajaHasta(inicioMenos1),
+        reporteRepo.getMovimientosCajaPorOrigen({ fecha_inicio, fecha_fin }),
+      ]);
+
+      const saldoInicialCents = toCents(saldoIni.debe) - toCents(saldoIni.haber);
+      let entradasCents = 0;
+      let salidasCents = 0;
+      const detalle = movimientos.map((m) => {
+        const eC = toCents(m.entradas);
+        const sC = toCents(m.salidas);
+        entradasCents += eC;
+        salidasCents += sC;
+        return {
+          tipo_origen: m.tipo_origen,
+          entradas: centsToAmount(eC),
+          salidas: centsToAmount(sC),
+          neto: centsToAmount(eC - sC),
+        };
+      });
+      const saldoFinalCents = saldoInicialCents + entradasCents - salidasCents;
+
+      return {
+        fecha_inicio,
+        fecha_fin,
+        saldo_inicial: centsToAmount(saldoInicialCents),
+        movimientos: detalle,
+        total_entradas: centsToAmount(entradasCents),
+        total_salidas: centsToAmount(salidasCents),
+        flujo_neto: centsToAmount(entradasCents - salidasCents),
+        saldo_final: centsToAmount(saldoFinalCents),
+      };
+    },
   };
 }
 

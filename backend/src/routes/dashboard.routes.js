@@ -15,4 +15,7 @@ router.get(
   dashboardController.obtenerKPIs,
 );
 
+// Dashboard gerencial (RF-REP-01): KPIs en tiempo real, solo GERENTE.
+router.get('/gerencial', requireAuth, authorizeRoles('GERENTE'), dashboardController.gerencial);
+
 export default router;
