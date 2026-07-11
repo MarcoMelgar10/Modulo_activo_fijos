@@ -1,0 +1,10 @@
+# Override local: el host ya tiene un MySQL nativo ocupando el puerto 3306,
+# así que el contenedor se expone en 3307. El backend sigue conectándose a
+# `mysql:3306` por la red interna de Docker (no se ve afectado).
+#
+# `!override` reemplaza por completo la lista `ports` del compose base (si no,
+# Compose la fusiona y seguiría intentando publicar el 3306 conflictivo).
+services:
+  mysql:
+    ports: !override
+      - '3307:3306'

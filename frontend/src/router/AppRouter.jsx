@@ -1,17 +1,17 @@
-import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { AppShell } from '../components/layout/AppShell.jsx';
 import { ProtectedRoute } from './ProtectedRoute.jsx';
-import { useAuth } from '../store/AuthContext.jsx';
 import { ACCESO } from '../lib/access.js';
 import { Login } from '../pages/Login.jsx';
-import { Dashboard } from '../pages/Dashboard.jsx';
+import { ModulosMenu } from '../pages/ModulosMenu.jsx';
+import { ModuloDetalle } from '../pages/ModuloDetalle.jsx';
+import { DashboardGerencial } from '../pages/DashboardGerencial.jsx';
 import { Cuentas } from '../pages/Cuentas.jsx';
 import { Asientos } from '../pages/Asientos.jsx';
 import { LibroDiario } from '../pages/LibroDiario.jsx';
 import { LibroMayor } from '../pages/LibroMayor.jsx';
 import { BalanceGeneral } from '../pages/BalanceGeneral.jsx';
 import { EstadoResultados } from '../pages/EstadoResultados.jsx';
-import { SimuladorEventos } from '../pages/SimuladorEventos.jsx';
 import { Cierres } from '../pages/Cierres.jsx';
 import { LibroCompras } from '../pages/LibroCompras.jsx';
 import { LibroVentas } from '../pages/LibroVentas.jsx';
@@ -31,15 +31,6 @@ import { EjecucionPresupuesto } from '../pages/EjecucionPresupuesto.jsx';
 // Guard por rol reutilizando ProtectedRoute.
 const guard = (element, roles) => <ProtectedRoute roles={roles}>{element}</ProtectedRoute>;
 
-// Landing según rol: Dashboard para GERENTE/CONTADOR; el resto va a su módulo.
-function RoleHome() {
-  const { user } = useAuth();
-  const rol = user?.rol?.nombre;
-  if (rol === 'CAJERO') return <Navigate to="/punto-venta" replace />;
-  if (rol === 'BODEGUERO') return <Navigate to="/productos" replace />;
-  return guard(<Dashboard />, ACCESO.CONTABILIDAD);
-}
-
 const router = createBrowserRouter([
   { path: '/login', element: <Login /> },
   {
@@ -50,7 +41,10 @@ const router = createBrowserRouter([
       </ProtectedRoute>
     ),
     children: [
-      { index: true, element: <RoleHome /> },
+      // Menú principal: al iniciar sesión solo se ven los módulos accesibles
+      // según el rol (RF-USR-02). Al entrar a un módulo se listan sus funciones.
+      { index: true, element: <ModulosMenu /> },
+      { path: 'm/:slug', element: <ModuloDetalle /> },
 
       // Ventas / POS (CAJERO + GERENTE)
       { path: 'punto-venta', element: guard(<PuntoVenta />, ACCESO.VENTAS) },
@@ -65,10 +59,12 @@ const router = createBrowserRouter([
       // Inventario (BODEGUERO + GERENTE)
       { path: 'productos', element: guard(<Productos />, ACCESO.INVENTARIO) },
 
+      // Dashboard gerencial: función del módulo General (no en el login).
+      { path: 'dashboard-gerencial', element: guard(<DashboardGerencial />, ['GERENTE']) },
+
       // Contabilidad y Reportes Financieros (CONTADOR + GERENTE)
       { path: 'cuentas', element: guard(<Cuentas />, ACCESO.CONTABILIDAD) },
       { path: 'asientos', element: guard(<Asientos />, ACCESO.CONTABILIDAD) },
-      { path: 'simulador-erp', element: guard(<SimuladorEventos />, ACCESO.CONTABILIDAD) },
       { path: 'cierres', element: guard(<Cierres />, ACCESO.CONTABILIDAD) },
       { path: 'libro-diario', element: guard(<LibroDiario />, ACCESO.CONTABILIDAD) },
       { path: 'libro-mayor', element: guard(<LibroMayor />, ACCESO.CONTABILIDAD) },

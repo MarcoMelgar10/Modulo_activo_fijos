@@ -1,33 +1,6 @@
-import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { PageHeader, Card, CardHeader, CardTitle, CardBody, Badge, Spinner, Select } from '../components/ui';
-import { useDashboard, useDashboardGerencial } from '../queries/useDashboard.js';
-import { useAuth } from '../store/AuthContext.jsx';
+import { PageHeader, Card, CardHeader, CardTitle, CardBody, Badge, Spinner } from '../components/ui';
+import { useDashboardGerencial } from '../queries/useDashboard.js';
 import { formatBs, formatFecha } from '../lib/format.js';
-
-const MESES = [
-  { value: 1, label: 'Enero' }, { value: 2, label: 'Febrero' },
-  { value: 3, label: 'Marzo' }, { value: 4, label: 'Abril' },
-  { value: 5, label: 'Mayo' }, { value: 6, label: 'Junio' },
-  { value: 7, label: 'Julio' }, { value: 8, label: 'Agosto' },
-  { value: 9, label: 'Septiembre' }, { value: 10, label: 'Octubre' },
-  { value: 11, label: 'Noviembre' }, { value: 12, label: 'Diciembre' },
-];
-
-async function fetchHealth() {
-  const res = await fetch('/health');
-  return res.json();
-}
-
-function StatusRow({ label, value }) {
-  const ok = value === 'ok';
-  return (
-    <div className="flex items-center justify-between py-2">
-      <span className="text-sm text-ink-muted">{label}</span>
-      <Badge tone={ok ? 'success' : 'danger'}>{ok ? 'Operativo' : 'Caído'}</Badge>
-    </div>
-  );
-}
 
 function KpiCard({ title, value, subtitle, tone }) {
   return (
@@ -41,8 +14,9 @@ function KpiCard({ title, value, subtitle, tone }) {
   );
 }
 
-// ---- Dashboard gerencial (RF-REP-01) ----
-function DashboardGerencial() {
+// Dashboard gerencial (RF-REP-01): KPIs del negocio en tiempo real.
+// Es una función del módulo General; se accede desde el menú, no en el login.
+export function DashboardGerencial() {
   const { data, isLoading, isError } = useDashboardGerencial();
 
   return (
@@ -117,76 +91,4 @@ function DashboardGerencial() {
       )}
     </div>
   );
-}
-
-// ---- Dashboard fiscal (CONTADOR) ----
-function DashboardFiscal() {
-  const now = new Date();
-  const [gestion] = useState(now.getFullYear());
-  const [mes, setMes] = useState(now.getMonth() + 1);
-
-  const { data: health, isLoading: healthLoading, isError: healthError } = useQuery({ queryKey: ['health'], queryFn: fetchHealth });
-  const { data: kpis, isLoading: kpiLoading } = useDashboard({ gestion, mes });
-
-  return (
-    <div>
-      <PageHeader title="Dashboard" description="Resumen del módulo de Contabilidad y Finanzas." />
-
-      <div className="mb-4 flex items-center gap-3">
-        <span className="text-sm text-ink-muted">Período:</span>
-        <Select value={mes} onChange={(e) => setMes(Number(e.target.value))}>
-          {MESES.map((m) => (<option key={m.value} value={m.value}>{m.label} {gestion}</option>))}
-        </Select>
-      </div>
-
-      <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {kpiLoading ? (
-          <div className="col-span-4 flex items-center gap-2 text-sm text-ink-muted"><Spinner /> Cargando indicadores…</div>
-        ) : kpis && (
-          <>
-            <KpiCard title="Utilidad del ejercicio" value={formatBs(kpis.utilidad_ejercicio)} subtitle={`Gestión ${gestion}`} />
-            <KpiCard title="IVA Débito Fiscal" value={formatBs(kpis.iva_debito)} subtitle={MESES[mes - 1].label} />
-            <KpiCard title="IVA Crédito Fiscal" value={formatBs(kpis.iva_credito)} subtitle={MESES[mes - 1].label} />
-            <KpiCard title="IVA Neto a pagar" value={formatBs(Math.abs(kpis.iva_neto))} subtitle={kpis.iva_neto >= 0 ? 'A favor del fisco' : 'A favor de la empresa'} tone={kpis.iva_neto >= 0 ? 'danger' : 'success'} />
-          </>
-        )}
-      </div>
-
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <Card>
-          <CardHeader><CardTitle>Estado del sistema</CardTitle></CardHeader>
-          <CardBody>
-            {healthLoading && <div className="flex items-center gap-2 text-sm text-ink-muted"><Spinner /> Verificando…</div>}
-            {healthError && <p className="text-sm text-red-600">No se pudo contactar al backend.</p>}
-            {health && (
-              <div className="divide-y divide-line">
-                <StatusRow label="API" value={health.checks?.server} />
-                <StatusRow label="Base de datos (MySQL)" value={health.checks?.database} />
-                <StatusRow label="Caché (Redis)" value={health.checks?.redis} />
-              </div>
-            )}
-          </CardBody>
-        </Card>
-
-        <Card>
-          <CardHeader><CardTitle>Cierre de gestión</CardTitle></CardHeader>
-          <CardBody>
-            {kpiLoading ? (
-              <div className="flex items-center gap-2 text-sm text-ink-muted"><Spinner /> Verificando…</div>
-            ) : kpis && (
-              <div className="flex items-center justify-between py-2">
-                <span className="text-sm text-ink-muted">Gestión {gestion}</span>
-                <Badge tone={kpis.cierre_estado === 'ABIERTO' ? 'success' : 'warning'}>{kpis.cierre_estado}</Badge>
-              </div>
-            )}
-          </CardBody>
-        </Card>
-      </div>
-    </div>
-  );
-}
-
-export function Dashboard() {
-  const { user } = useAuth();
-  return user?.rol?.nombre === 'GERENTE' ? <DashboardGerencial /> : <DashboardFiscal />;
 }

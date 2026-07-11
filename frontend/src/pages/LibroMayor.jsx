@@ -75,6 +75,11 @@ export function LibroMayor() {
     }
     return {
       ...mov,
+      // El backend anida el asiento; se exponen fecha, número y concepto en el
+      // nivel superior para que los usen la tabla y la exportación a PDF.
+      fecha: mov.fecha ?? mov.asiento?.fecha,
+      numero_asiento: mov.numero_asiento ?? mov.asiento?.numero_asiento,
+      concepto: mov.concepto ?? mov.asiento?.concepto,
       saldoAcumulado: tempSaldo,
     };
   });

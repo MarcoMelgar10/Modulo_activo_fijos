@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useLibroDiario } from '../queries/useLibros.js';
 import {
   PageHeader,
@@ -38,10 +38,32 @@ export function LibroDiario() {
     });
   };
 
-  const totalDebe = data?.totalDebe ?? data?.total_debe ?? 0;
-  const totalHaber = data?.totalHaber ?? data?.total_haber ?? 0;
-  const cuadrado = data?.cuadrado ?? false;
-  const asientos = data?.asientos ?? [];
+  const totalDebe = data?.totales?.total_debe ?? 0;
+  const totalHaber = data?.totales?.total_haber ?? 0;
+  const cuadrado = data?.totales?.cuadrado ?? false;
+
+  // El backend devuelve una lista plana de líneas (`registros`), cada una con su
+  // asiento anidado. La vista es jerárquica (asiento → líneas), así que aquí se
+  // agrupan las líneas por asiento conservando el orden cronológico del backend.
+  const asientos = useMemo(() => {
+    const registros = data?.registros ?? [];
+    const porAsiento = new Map();
+    for (const r of registros) {
+      const a = r.asiento;
+      if (!a) continue;
+      if (!porAsiento.has(a.id_asiento)) {
+        porAsiento.set(a.id_asiento, { ...a, lineas: [] });
+      }
+      porAsiento.get(a.id_asiento).lineas.push({
+        id_linea: r.id_linea,
+        debe: r.debe,
+        haber: r.haber,
+        descripcion: r.descripcion,
+        cuenta: r.cuenta,
+      });
+    }
+    return [...porAsiento.values()];
+  }, [data]);
 
   const exportarPdf = () =>
     exportarPDF({
