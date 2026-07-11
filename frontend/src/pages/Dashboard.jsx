@@ -1,6 +1,9 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { PageHeader, Card, CardHeader, CardTitle, CardBody, Badge, Spinner, Select } from '../components/ui';
+import { navItems, navSections } from '../components/layout/navItems.js';
+import { SectionIcon } from '../components/layout/SectionIcon.jsx';
 import { useDashboard, useDashboardGerencial } from '../queries/useDashboard.js';
 import { useAuth } from '../store/AuthContext.jsx';
 import { formatBs, formatFecha } from '../lib/format.js';
@@ -186,7 +189,67 @@ function DashboardFiscal() {
   );
 }
 
+// ---- Menú de módulos según el perfil (RF-USR-02) ----
+function MenuModulos({ rol }) {
+  const grupos = navSections
+    .map((section) => ({
+      section,
+      items: navItems.filter(
+        (item) => item.section === section && item.to !== '/' && (!item.roles || item.roles.includes(rol)),
+      ),
+    }))
+    .filter((g) => g.items.length > 0);
+
+  if (grupos.length === 0) return null;
+
+  return (
+    <section className="mt-8">
+      <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-ink-soft">Módulos</h2>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {grupos.map(({ section, items }) => (
+          <Card key={section}>
+            <CardHeader className="flex items-center gap-2">
+              <SectionIcon name={section} className="text-accent-600" />
+              <CardTitle>{section}</CardTitle>
+            </CardHeader>
+            <CardBody className="px-2 py-2">
+              <ul className="space-y-0.5">
+                {items.map((item) => (
+                  <li key={item.to}>
+                    <Link
+                      to={item.to}
+                      className="block rounded-md px-3 py-2 transition-colors hover:bg-surface-sunken"
+                    >
+                      <p className="text-sm font-medium text-ink">{item.label}</p>
+                      {item.desc && <p className="text-xs text-ink-muted">{item.desc}</p>}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </CardBody>
+          </Card>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+// ---- Panel principal: landing de todos los roles ----
 export function Dashboard() {
   const { user } = useAuth();
-  return user?.rol?.nombre === 'GERENTE' ? <DashboardGerencial /> : <DashboardFiscal />;
+  const rol = user?.rol?.nombre;
+
+  return (
+    <div>
+      {rol === 'GERENTE' && <DashboardGerencial />}
+      {rol === 'CONTADOR' && <DashboardFiscal />}
+      {rol !== 'GERENTE' && rol !== 'CONTADOR' && (
+        <PageHeader
+          title={`Hola, ${user?.nombre ?? ''}`.trim()}
+          description="Panel principal: accesos a los módulos de tu perfil."
+        />
+      )}
+      <MenuModulos rol={rol} />
+    </div>
+  );
 }

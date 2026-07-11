@@ -1,7 +1,6 @@
-import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { AppShell } from '../components/layout/AppShell.jsx';
 import { ProtectedRoute } from './ProtectedRoute.jsx';
-import { useAuth } from '../store/AuthContext.jsx';
 import { ACCESO } from '../lib/access.js';
 import { Login } from '../pages/Login.jsx';
 import { Dashboard } from '../pages/Dashboard.jsx';
@@ -31,15 +30,6 @@ import { EjecucionPresupuesto } from '../pages/EjecucionPresupuesto.jsx';
 // Guard por rol reutilizando ProtectedRoute.
 const guard = (element, roles) => <ProtectedRoute roles={roles}>{element}</ProtectedRoute>;
 
-// Landing según rol: Dashboard para GERENTE/CONTADOR; el resto va a su módulo.
-function RoleHome() {
-  const { user } = useAuth();
-  const rol = user?.rol?.nombre;
-  if (rol === 'CAJERO') return <Navigate to="/punto-venta" replace />;
-  if (rol === 'BODEGUERO') return <Navigate to="/productos" replace />;
-  return guard(<Dashboard />, ACCESO.CONTABILIDAD);
-}
-
 const router = createBrowserRouter([
   { path: '/login', element: <Login /> },
   {
@@ -50,7 +40,9 @@ const router = createBrowserRouter([
       </ProtectedRoute>
     ),
     children: [
-      { index: true, element: <RoleHome /> },
+      // Panel principal: landing de todos los roles; su contenido (KPIs y
+      // menú de módulos) se adapta al perfil (RF-USR-02).
+      { index: true, element: <Dashboard /> },
 
       // Ventas / POS (CAJERO + GERENTE)
       { path: 'punto-venta', element: guard(<PuntoVenta />, ACCESO.VENTAS) },
