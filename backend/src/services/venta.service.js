@@ -44,7 +44,7 @@ export function createVentaService({
       if (!prod.activo) throw ApiError.badRequest(`El producto ${prod.nombre} está inactivo`);
       if (l.cantidad <= 0) throw ApiError.badRequest('La cantidad debe ser mayor a cero');
 
-      const precioCents = toCents(l.precio_unitario != null ? l.precio_unitario : prod.precio_venta);
+      const precioCents = toCents(l.precio_unitario ?? prod.precio_venta);
       const lotes = await loteRepo.findDisponiblesFEFO({ id_producto: l.id_producto, id_sucursal });
       let restante = l.cantidad;
       for (const lote of lotes) {
